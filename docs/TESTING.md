@@ -1,0 +1,87 @@
+# Manual Regression Checklist
+
+Run these checks in a modern browser. Use a production build served with `npm run preview` for PWA and offline checks.
+
+## Initial state and start new day
+
+- [ ] With no saved data, confirm the initial screen shows “Leave home now.”
+- [ ] Select “Leave home now” and confirm the workday begins with a visible timestamp.
+- [ ] Complete a day, select “Start new day,” and confirm a fresh day is shown without deleting History.
+- [ ] Refresh before leaving home and confirm the fresh current day remains available.
+
+## Add customer
+
+- [ ] Leave home and add a customer with a name and kilometre value.
+- [ ] Confirm the customer appears with the entered name and kilometres.
+- [ ] Add a customer with an empty kilometre field and confirm the workflow is not blocked.
+- [ ] Confirm another customer cannot be added until the current customer has been left.
+- [ ] After leaving a customer, add another and confirm both appear in sequence.
+
+## Edit customer
+
+- [ ] Confirm customer names and recorded timestamps are displayed but are not editable.
+- [ ] Confirm the supported customer edit—the kilometres from the previous stop—can be changed during an active day.
+
+## Customer timestamps
+
+- [ ] Select “Arrive now” and confirm an arrival timestamp appears.
+- [ ] Confirm “Leave now” becomes available only after arrival.
+- [ ] Select “Leave now” and confirm a departure timestamp appears.
+- [ ] Refresh and confirm all recorded timestamps remain unchanged.
+
+## Edit kilometres
+
+- [ ] Enter, change, and clear kilometres on an active customer visit.
+- [ ] Enter, change, and clear kilometres from the last customer to home.
+- [ ] Confirm empty kilometre values remain valid and do not block any action.
+- [ ] In expanded History, edit and clear both types of kilometre value and confirm totals update.
+- [ ] Refresh and confirm History kilometre edits persist.
+
+## Finish workday
+
+- [ ] Confirm “Arrive home now” is disabled while a customer is present but has not been left.
+- [ ] Select “Arrive home now” after leaving the final customer, with the home kilometre field empty.
+- [ ] Confirm the active-day details disappear and only “Start new day” remains for the current day.
+- [ ] Confirm the completed day is added to History immediately.
+
+## History
+
+- [ ] Complete multiple workdays and confirm History displays newest first.
+- [ ] Confirm each collapsed entry shows its date, leave/arrival times, customer count, and recorded kilometre total when available.
+- [ ] Expand each entry and confirm all customer names, arrival/departure times, and kilometre fields are present.
+- [ ] Confirm a completed workday with no customers is displayed correctly.
+- [ ] Confirm History date headers remain horizontally aligned when entries are open or closed.
+
+## Delete workday
+
+- [ ] Select “Delete day” and cancel the confirmation; confirm nothing is deleted.
+- [ ] Select “Delete day,” accept the confirmation, and confirm only that history entry disappears.
+- [ ] Refresh and confirm the deleted entry remains deleted and other entries remain intact.
+
+## CSV export
+
+- [ ] Select “Export CSV” and confirm a file named `workday-history-YYYY-MM-DD.csv` downloads.
+- [ ] Confirm the columns appear in the documented application order and every completed workday is included.
+- [ ] Confirm each customer visit has its own row with repeated workday-level values.
+- [ ] Confirm a workday without customers has one row with empty customer fields.
+- [ ] Confirm empty kilometre fields remain empty in the CSV.
+- [ ] Use a customer name containing a comma, quote, or line break and confirm the resulting CSV remains correctly structured.
+
+## Persistence after restart
+
+- [ ] During an active day, close and reopen the browser or tab and confirm the current workday is restored.
+- [ ] After completing days, close and reopen the browser or tab and confirm History is restored.
+- [ ] Confirm the application data is isolated to the current browser profile and deployed origin.
+
+## PWA installation
+
+- [ ] Build and serve the production application, then confirm the browser offers PWA installation where supported.
+- [ ] Install the PWA and confirm it opens in standalone mode.
+- [ ] Confirm the installed app starts at `/WorkdayTracker/`.
+
+## Offline mode
+
+- [ ] Load the production application online once and wait for service-worker registration.
+- [ ] Switch the browser to offline mode and reload the installed app or production URL.
+- [ ] Confirm the cached application shell loads.
+- [ ] Record or edit data offline, reload, and confirm localStorage persistence still works.

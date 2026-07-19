@@ -1,16 +1,75 @@
-# React + Vite
+# Workday Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Workday Tracker is a mobile-first browser application for recording a workday made up of travel from home, customer visits, and travel back home. Data is stored locally in the browser; the application has no accounts, backend, GPS, or cloud storage.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Record leaving home and arriving home with timestamps.
+- Add sequential customer visits and record arrival and departure times.
+- Record optional kilometres between stops and from the final customer to home.
+- Keep completed workdays in persistent, expandable history.
+- Edit kilometre values in active and completed workdays.
+- Delete individual completed workdays after confirmation.
+- Export all completed workdays as CSV.
+- Install as a Progressive Web App (PWA) and use the cached application shell offline.
 
-## React Compiler
+## Technology stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- Vite 8
+- Plain JavaScript and CSS
+- Browser `localStorage`
+- `vite-plugin-pwa` / Workbox-generated service worker
+- ESLint
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Node.js and npm. The deployment workflow uses Node.js 24; the repository does not declare a minimum local Node.js version.
+- A modern browser with `localStorage` support.
+
+## Installation
+
+```sh
+npm ci
+```
+
+## Run locally
+
+```sh
+npm run dev
+```
+
+Open the local URL printed by Vite.
+
+## Production build
+
+```sh
+npm run build
+```
+
+The generated production files are written to `dist/`. To serve that build locally:
+
+```sh
+npm run preview
+```
+
+## Git workflow
+
+- `main` is the stable branch and is deployed to GitHub Pages.
+- `develop` is the development branch.
+- Develop and verify changes on `develop`, then merge approved stable changes into `main`.
+
+## Deployment
+
+Deployment is implemented by `.github/workflows/deploy.yml` using GitHub Actions and GitHub Pages.
+
+The workflow runs automatically for pushes to `main` and can also be started with `workflow_dispatch`. It:
+
+1. Checks out the repository on Ubuntu.
+2. Configures Node.js 24 with npm caching.
+3. Installs locked dependencies with `npm ci`.
+4. Builds the application with `npm run build`.
+5. Configures GitHub Pages and uploads `dist/` as the Pages artifact.
+6. Deploys the artifact with `actions/deploy-pages` to the `github-pages` environment.
+
+Vite uses the base path `/WorkdayTracker/`. The PWA manifest uses the same start URL and scope. The deployed application is available at <https://scheronimus.github.io/WorkdayTracker/>.
