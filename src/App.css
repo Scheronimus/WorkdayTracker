@@ -64,6 +64,7 @@ h2 { margin: 0; font-size: 1.08rem; }
 .history-visit h3 { margin: 0; font-size: 0.98rem; }
 .history-visit .history-times { padding-top: 0; }
 .delete-day-button { color: #8a3030; border: 1px solid #e3c5c5; background: transparent; }
+.app-version { margin-top: 32px; color: #89918e; font-size: 0.72rem; text-align: center; }
 
 @media (min-width: 600px) {
   .app-shell { padding-top: 50px; }

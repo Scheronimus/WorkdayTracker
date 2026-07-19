@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import packageJson from '../package.json'
 import './App.css'
 
 const STORAGE_KEY = 'workday-tracker-current'
@@ -464,6 +465,8 @@ function App() {
           </div>
         </section>
       )}
+
+      <footer className="app-version">v{packageJson.version}</footer>
     </main>
   )
 }
