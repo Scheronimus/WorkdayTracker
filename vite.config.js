@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: '/WorkdayTracker/',
   plugins: [
     react(),
     VitePWA({
@@ -14,7 +15,8 @@ export default defineConfig({
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '/',
+        start_url: '/WorkdayTracker/',
+        scope: '/WorkdayTracker/',
       },
     }),
   ],
