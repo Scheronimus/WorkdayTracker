@@ -14,6 +14,7 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Export all completed workdays as CSV.
 - Switch between English and Spanish (Spain) from Options, with the preference saved locally.
 - Install as a Progressive Web App (PWA) and use the cached application shell offline.
+- Follow the in-app iPhone/iPad installation guidance from Options.
 
 ## Technology stack
 

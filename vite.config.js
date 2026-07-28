@@ -17,6 +17,18 @@ export default defineConfig({
         display: 'standalone',
         start_url: '/WorkdayTracker/',
         scope: '/WorkdayTracker/',
+        icons: [
+          {
+            src: '/WorkdayTracker/app-icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/WorkdayTracker/app-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
       },
     }),
   ],

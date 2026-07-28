@@ -19,6 +19,16 @@ function readLanguage() {
   return Object.hasOwn(locales, savedLanguage) ? savedLanguage : 'en'
 }
 
+function isIosDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
+function isStandaloneApp() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || navigator.standalone === true
+}
+
 function formatTime(timestamp, locale) {
   return new Intl.DateTimeFormat(locale, {
     day: '2-digit',
@@ -116,6 +126,8 @@ function App() {
   const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false)
   const [isFinishSheetOpen, setIsFinishSheetOpen] = useState(false)
   const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [isAppInstalled, setIsAppInstalled] = useState(isStandaloneApp)
   const [workday, setWorkday] = useState(() => readStorage(STORAGE_KEY, null))
   const [history, setHistory] = useState(() => {
     const savedHistory = readStorage(HISTORY_KEY, [])
@@ -124,6 +136,7 @@ function App() {
   const [name, setName] = useState('')
   const [kilometres, setKilometres] = useState('')
   const locale = locales[language] ?? locales.en
+  const iosDevice = isIosDevice()
   const t = (key, replacements) => translate(language, key, replacements)
 
   useEffect(() => {
@@ -153,6 +166,25 @@ function App() {
     return () => {
       window.removeEventListener('focus', refreshCurrentTime)
       document.removeEventListener('visibilitychange', refreshCurrentTime)
+    }
+  }, [])
+
+  useEffect(() => {
+    function captureInstallPrompt(event) {
+      event.preventDefault()
+      setInstallPrompt(event)
+    }
+
+    function markAppInstalled() {
+      setInstallPrompt(null)
+      setIsAppInstalled(true)
+    }
+
+    window.addEventListener('beforeinstallprompt', captureInstallPrompt)
+    window.addEventListener('appinstalled', markAppInstalled)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', captureInstallPrompt)
+      window.removeEventListener('appinstalled', markAppInstalled)
     }
   }, [])
 
@@ -362,6 +394,13 @@ function App() {
   function openCustomerSheet() {
     setIsCustomerSheetOpen(true)
     window.setTimeout(() => document.querySelector('#customer-name')?.focus(), 0)
+  }
+
+  async function installApp() {
+    if (!installPrompt) return
+    await installPrompt.prompt()
+    await installPrompt.userChoice
+    setInstallPrompt(null)
   }
 
   return (
@@ -826,6 +865,31 @@ function App() {
             ))}
             <p>{t('savedAutomatically')}</p>
           </fieldset>
+
+          {!isAppInstalled && (installPrompt || iosDevice) && (
+            <section className="install-panel" aria-labelledby="install-title">
+              <div className="install-icon" aria-hidden="true">
+                <img src={`${import.meta.env.BASE_URL}app-icon.svg`} alt="" />
+              </div>
+              <div>
+                <h3 id="install-title">{iosDevice ? t('installIosTitle') : t('installApp')}</h3>
+                <p>{t('installAppDescription')}</p>
+              </div>
+
+              {installPrompt && (
+                <button className="primary" type="button" onClick={installApp}>
+                  {t('installNow')}
+                </button>
+              )}
+
+              {iosDevice && !installPrompt && (
+                <ol className="ios-install-steps">
+                  <li>{t('installIosStepShare')}</li>
+                  <li>{t('installIosStepHome')}</li>
+                </ol>
+              )}
+            </section>
+          )}
         </section>
       )}
 

@@ -109,7 +109,11 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 ## PWA installation
 
 - [ ] Build and serve the production application, then confirm the browser offers PWA installation where supported.
+- [ ] On iPhone or iPad, open Options and confirm the Share → Add to Home Screen instructions appear.
+- [ ] On a supported Chromium browser, open Options and confirm the install button opens the native installation prompt.
 - [ ] Install the PWA and confirm it opens in standalone mode.
+- [ ] Confirm the installation panel is hidden when running as an installed app.
+- [ ] Confirm the green route icon appears on the Home Screen.
 - [ ] Confirm the installed app starts at `/WorkdayTracker/`.
 
 ## Offline mode
