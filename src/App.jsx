@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import packageJson from '../package.json'
+import { importWorkdaysFromCsv } from './csvImport'
 import { LANGUAGE_KEY, languageOptions, locales, translate } from './i18n'
 import './App.css'
 
@@ -135,6 +136,7 @@ function App() {
   })
   const [name, setName] = useState('')
   const [kilometres, setKilometres] = useState('')
+  const [importStatus, setImportStatus] = useState(null)
   const locale = locales[language] ?? locales.en
   const iosDevice = isIosDevice()
   const t = (key, replacements) => translate(language, key, replacements)
@@ -389,6 +391,52 @@ function App() {
     link.click()
     link.remove()
     URL.revokeObjectURL(url)
+  }
+
+  async function importCsv(event) {
+    const [file] = event.target.files
+    event.target.value = ''
+    if (!file) return
+
+    try {
+      const importedWorkdays = importWorkdaysFromCsv(await file.text())
+      const existingIds = new Set(history.map((day) => String(day.id)))
+      const newWorkdays = importedWorkdays.filter((day) => !existingIds.has(String(day.id)))
+      const duplicateCount = importedWorkdays.length - newWorkdays.length
+
+      if (!newWorkdays.length) {
+        setImportStatus({ type: 'info', key: 'importNoNewDays' })
+        return
+      }
+
+      const confirmed = window.confirm(t('importConfirmation', {
+        workdays: t(newWorkdays.length === 1 ? 'newWorkdayCount' : 'newWorkdayCountPlural', {
+          count: newWorkdays.length,
+        }),
+        duplicates: t(duplicateCount === 1 ? 'duplicateCount' : 'duplicateCountPlural', {
+          count: duplicateCount,
+        }),
+      }))
+      if (!confirmed) {
+        setImportStatus(null)
+        return
+      }
+
+      setHistory((current) => [...newWorkdays, ...current]
+        .sort((a, b) => new Date(b.arrivedHomeAt) - new Date(a.arrivedHomeAt)))
+      setImportStatus({
+        type: 'success',
+        key: newWorkdays.length === 1 ? 'importSuccess' : 'importSuccessPlural',
+        replacements: {
+          count: newWorkdays.length,
+          duplicates: t(duplicateCount === 1 ? 'duplicateSkipped' : 'duplicatesSkipped', {
+            count: duplicateCount,
+          }),
+        },
+      })
+    } catch {
+      setImportStatus({ type: 'error', key: 'importInvalidFile' })
+    }
   }
 
   function openCustomerSheet() {
@@ -749,6 +797,22 @@ function App() {
                 : t('emptyHistory')}
             </p>
           </div>
+
+          <section className="import-panel" aria-labelledby="import-title">
+            <div>
+              <h3 id="import-title">{t('importCsv')}</h3>
+              <p>{t('importCsvDescription')}</p>
+            </div>
+            <label className="secondary import-button">
+              {t('chooseCsvFile')}
+              <input type="file" accept=".csv,text/csv" onChange={importCsv} />
+            </label>
+            {importStatus && (
+              <p className={`import-status ${importStatus.type}`} role={importStatus.type === 'error' ? 'alert' : 'status'}>
+                {t(importStatus.key, importStatus.replacements)}
+              </p>
+            )}
+          </section>
 
           {history.length > 0 && (
             <>

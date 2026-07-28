@@ -12,6 +12,7 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Edit kilometre values in active and completed workdays.
 - Delete individual completed workdays after confirmation.
 - Export all completed workdays as CSV.
+- Import completed workdays from a CSV exported by an earlier installation; existing history is preserved and duplicates are skipped.
 - Switch between English and Spanish (Spain) from Options, with the preference saved locally.
 - Install as a Progressive Web App (PWA) and use the cached application shell offline.
 - Follow the in-app iPhone/iPad installation guidance from Options.
