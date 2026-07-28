@@ -35,6 +35,20 @@ npm ci
 
 ## Run locally
 
+### One-click start on Windows
+
+Double-click **`Start Workday Tracker.cmd`** in the project folder. The launcher installs dependencies when needed, starts the local server, and opens the app in your default browser.
+
+Keep the launcher window open while testing. Press `Ctrl+C` in that window to stop the app.
+
+### Command line
+
+```sh
+npm start
+```
+
+The browser opens automatically. To start without opening a browser:
+
 ```sh
 npm run dev
 ```

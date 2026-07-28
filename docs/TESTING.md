@@ -1,5 +1,15 @@
 # Manual Regression Checklist
 
+## Start the app
+
+On Windows, double-click **`Start Workday Tracker.cmd`** in the project folder. It installs dependencies when necessary, starts the server, and opens the correct local URL automatically. Keep its terminal window open during testing and press `Ctrl+C` there when finished.
+
+From a terminal, the equivalent command is:
+
+```sh
+npm start
+```
+
 Run these checks in a modern browser. Use a production build served with `npm run preview` for PWA and offline checks.
 
 ## Initial state and start new day
