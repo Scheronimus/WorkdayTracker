@@ -184,6 +184,7 @@ h2 { margin: 0; font-size: 1.08rem; }
 }
 
 .history { min-height: 70svh; }
+.options { min-height: 70svh; }
 .section-heading { margin-bottom: 16px; }
 .section-heading .eyebrow { margin: 0 0 4px; }
 .section-heading h2 { font-size: 1.5rem; }
@@ -208,6 +209,37 @@ h2 { margin: 0; font-size: 1.08rem; }
 .history-visit h3 { margin: 0; font-size: 0.98rem; }
 .history-visit .history-times { padding-top: 0; }
 .delete-day-button { color: #8a3030; border: 1px solid #e3c5c5; background: transparent; }
+.language-panel {
+  display: grid;
+  gap: 10px;
+  margin: 28px 0 0;
+  padding: 18px;
+  border: 1px solid #dde5e2;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(37, 61, 55, 0.06);
+}
+.language-panel legend {
+  padding: 0 6px;
+  color: #3d4844;
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+.language-option {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 14px;
+  border: 1px solid #dde5e2;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.language-option:has(input:checked) { border-color: #75b9a8; background: #edf8f5; }
+.language-option input { width: 20px; height: 20px; accent-color: #176b58; }
+.language-option span { display: grid; gap: 2px; }
+.language-option small { color: #6a7470; }
+.language-panel > p { margin: 5px 2px 0; color: #6a7470; font-size: 0.78rem; line-height: 1.4; }
 .app-version { margin-top: 32px; color: #89918e; font-size: 0.72rem; text-align: center; }
 .bottom-nav {
   position: fixed;
@@ -216,7 +248,7 @@ h2 { margin: 0; font-size: 1.08rem; }
   bottom: 0;
   left: 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   width: min(100%, 430px);
   margin: 0 auto;
   padding: 8px 18px max(8px, env(safe-area-inset-bottom));

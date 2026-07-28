@@ -89,6 +89,13 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] After completing days, close and reopen the browser or tab and confirm History is restored.
 - [ ] Confirm the application data is isolated to the current browser profile and deployed origin.
 
+## Language
+
+- [ ] Open Options, choose Español, and confirm Today, History, Options, dialogs, journey labels, and dates switch to Spanish immediately.
+- [ ] Refresh and restart the app, then confirm Spanish remains selected.
+- [ ] Export History in Spanish and confirm the CSV filename and column headings are translated.
+- [ ] Choose English and confirm the complete interface returns to English and remains English after refresh.
+
 ## PWA installation
 
 - [ ] Build and serve the production application, then confirm the browser offers PWA installation where supported.

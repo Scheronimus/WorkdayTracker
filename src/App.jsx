@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import packageJson from '../package.json'
+import { LANGUAGE_KEY, languageOptions, locales, translate } from './i18n'
 import './App.css'
 
 const STORAGE_KEY = 'workday-tracker-current'
@@ -13,8 +14,8 @@ function readStorage(key, fallback) {
   }
 }
 
-function formatTime(timestamp) {
-  return new Intl.DateTimeFormat(undefined, {
+function formatTime(timestamp, locale) {
+  return new Intl.DateTimeFormat(locale, {
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
@@ -23,8 +24,8 @@ function formatTime(timestamp) {
   }).format(new Date(timestamp))
 }
 
-function formatDate(timestamp) {
-  return new Intl.DateTimeFormat(undefined, {
+function formatDate(timestamp, locale) {
+  return new Intl.DateTimeFormat(locale, {
     weekday: 'short',
     day: '2-digit',
     month: 'short',
@@ -32,8 +33,8 @@ function formatDate(timestamp) {
   }).format(new Date(timestamp))
 }
 
-function formatClock(timestamp) {
-  return new Intl.DateTimeFormat(undefined, {
+function formatClock(timestamp, locale) {
+  return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(timestamp))
@@ -54,19 +55,19 @@ function totalKilometres(day) {
   return values.length ? values.reduce((total, value) => total + Number(value), 0) : null
 }
 
-function kilometresLegLabel(visits, index) {
-  const from = index === 0 ? 'home' : visits[index - 1].name
-  return `Kilometres from ${from} to ${visits[index].name}`
+function kilometresLegLabel(visits, index, t) {
+  const from = index === 0 ? t('homeLower') : visits[index - 1].name
+  return t('kilometresLeg', { from, to: visits[index].name })
 }
 
-function nextKilometresLegLabel(visits, nextCustomerName) {
-  const from = visits.length ? visits.at(-1).name : 'home'
-  return `Kilometres from ${from} to ${nextCustomerName.trim() || 'next customer'}`
+function nextKilometresLegLabel(visits, nextCustomerName, t) {
+  const from = visits.length ? visits.at(-1).name : t('homeLower')
+  return t('kilometresLeg', { from, to: nextCustomerName.trim() || t('nextCustomer') })
 }
 
-function homeKilometresLegLabel(visits) {
-  const from = visits.length ? visits.at(-1).name : 'home'
-  return `Kilometres from ${from} to home`
+function homeKilometresLegLabel(visits, t) {
+  const from = visits.length ? visits.at(-1).name : t('homeLower')
+  return t('kilometresLeg', { from, to: t('homeLower') })
 }
 
 function csvDate(timestamp) {
@@ -77,9 +78,9 @@ function csvDate(timestamp) {
   return `${year}-${month}-${day}`
 }
 
-function csvTime(timestamp) {
+function csvTime(timestamp, locale) {
   if (!timestamp) return ''
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
@@ -104,6 +105,7 @@ function emptyWorkday() {
 
 function App() {
   const [activeView, setActiveView] = useState('today')
+  const [language, setLanguage] = useState(() => readStorage(LANGUAGE_KEY, 'en'))
   const [now, setNow] = useState(() => Date.now())
   const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false)
   const [isFinishSheetOpen, setIsFinishSheetOpen] = useState(false)
@@ -114,6 +116,8 @@ function App() {
   })
   const [name, setName] = useState('')
   const [kilometres, setKilometres] = useState('')
+  const locale = locales[language] ?? locales.en
+  const t = (key, replacements) => translate(language, key, replacements)
 
   useEffect(() => {
     if (workday) {
@@ -127,6 +131,10 @@ function App() {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
   }, [history])
 
+  useEffect(() => {
+    localStorage.setItem(LANGUAGE_KEY, JSON.stringify(language))
+    document.documentElement.lang = language
+  }, [language])
   useEffect(() => {
     if (!workday?.leftHomeAt || workday.arrivedHomeAt) return undefined
     const timer = window.setInterval(() => setNow(Date.now()), 30000)
@@ -261,7 +269,7 @@ function App() {
   }
 
   function deleteHistoryDay(dayId) {
-    const confirmed = window.confirm('Delete this workday? This action cannot be undone.')
+    const confirmed = window.confirm(t('deleteConfirmation'))
     if (confirmed) {
       setHistory((current) => current.filter((day) => day.id !== dayId))
     }
@@ -269,15 +277,15 @@ function App() {
 
   function exportCsv() {
     const headers = [
-      'Workday ID',
-      'Workday Date',
-      'Leave Home Time',
-      'Customer Name',
-      'Arrival Time',
-      'Departure Time',
-      'Kilometres From Previous Stop',
-      'Arrive Home Time',
-      'Kilometres From Last Customer To Home',
+      t('csvWorkdayId'),
+      t('csvWorkdayDate'),
+      t('csvLeaveHome'),
+      t('csvCustomerName'),
+      t('csvArrival'),
+      t('csvDeparture'),
+      t('csvPreviousStop'),
+      t('csvArriveHome'),
+      t('csvFinalJourney'),
     ]
 
     const rows = history.flatMap((day) => {
@@ -285,12 +293,12 @@ function App() {
       return visits.map((visit) => [
         day.id,
         csvDate(day.leftHomeAt),
-        csvTime(day.leftHomeAt),
+        csvTime(day.leftHomeAt, locale),
         visit?.name ?? '',
-        csvTime(visit?.arrivedAt),
-        csvTime(visit?.leftAt),
+        csvTime(visit?.arrivedAt, locale),
+        csvTime(visit?.leftAt, locale),
         visit?.kilometres ?? '',
-        csvTime(day.arrivedHomeAt),
+        csvTime(day.arrivedHomeAt, locale),
         day.kilometresHome ?? '',
       ])
     })
@@ -302,7 +310,7 @@ function App() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `workday-history-${csvDate(new Date())}.csv`
+    link.download = `${t('exportFilename')}-${csvDate(new Date())}.csv`
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -319,27 +327,27 @@ function App() {
       {activeView === 'today' && (
         <div className="view">
           <header className="app-header">
-            <p className="eyebrow">Today on the road</p>
-            <h1>Workday tracker</h1>
+            <p className="eyebrow">{t('todayOnRoad')}</p>
+            <h1>{t('appTitle')}</h1>
             <p className="status">
-              {(!workday || !workday.leftHomeAt) && 'Workday ready'}
-              {workday?.leftHomeAt && !workday.arrivedHomeAt && 'Workday in progress'}
-              {workday?.arrivedHomeAt && 'Workday complete'}
+              {(!workday || !workday.leftHomeAt) && t('workdayReady')}
+              {workday?.leftHomeAt && !workday.arrivedHomeAt && t('workdayInProgress')}
+              {workday?.arrivedHomeAt && t('workdayComplete')}
             </p>
           </header>
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (
-            <section className="day-overview" aria-label="Workday progress">
+            <section className="day-overview" aria-label={t('workdayProgress')}>
               <div>
-                <span>On the road</span>
+                <span>{t('onRoad')}</span>
                 <strong>{formatDuration(workday.leftHomeAt, now)}</strong>
               </div>
               <div>
-                <span>Customers</span>
+                <span>{t('customers')}</span>
                 <strong>{completedVisits}/{workday.visits.length}</strong>
               </div>
               <div>
-                <span>Distance</span>
+                <span>{t('distance')}</span>
                 <strong>{totalKilometres(workday) ?? '—'} km</strong>
               </div>
             </section>
@@ -349,24 +357,24 @@ function App() {
             <section className="prepared-day" aria-labelledby="prepared-day-title">
               <div className="prepared-day-icon" aria-hidden="true">✓</div>
               <div>
-                <p className="eyebrow">Prepared for</p>
-                <h2 id="prepared-day-title">{formatDate(now)}</h2>
-                <p>Start the workday when you leave home.</p>
+                <p className="eyebrow">{t('preparedFor')}</p>
+                <h2 id="prepared-day-title">{formatDate(now, locale)}</h2>
+                <p>{t('startInstruction')}</p>
               </div>
               <button className="primary start-button" onClick={leaveHome}>
-                Leave home now
+                {t('leaveHomeNow')}
               </button>
             </section>
           )}
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (
             <>
-              <section className="timeline" aria-label="Workday route">
+              <section className="timeline" aria-label={t('workdayRoute')}>
                 <div className="timeline-row home-row route-stop complete">
                   <span className="dot" />
                   <div>
-                    <strong>Home</strong>
-                    <time dateTime={workday.leftHomeAt}>Left {formatClock(workday.leftHomeAt)}</time>
+                    <strong>{t('home')}</strong>
+                    <time dateTime={workday.leftHomeAt}>{t('left')} {formatClock(workday.leftHomeAt, locale)}</time>
                   </div>
                 </div>
 
@@ -381,7 +389,7 @@ function App() {
                   <h2>{visit.name}</h2>
                   {visit.leftAt && (
                     <p className="visit-summary">
-                      {formatClock(visit.arrivedAt)}–{formatClock(visit.leftAt)}
+                      {formatClock(visit.arrivedAt, locale)}–{formatClock(visit.leftAt, locale)}
                       {visit.kilometres !== null ? ` · ${visit.kilometres} km` : ''}
                     </p>
                   )}
@@ -389,13 +397,13 @@ function App() {
               </div>
 
               <label className="kilometres-field visit-detail">
-                {kilometresLegLabel(workday.visits, index)}
+                {kilometresLegLabel(workday.visits, index, t)}
                 <input
                   type="number"
                   inputMode="decimal"
                   min="0"
                   step="0.1"
-                  placeholder="Unknown for now"
+                  placeholder={t('unknownForNow')}
                   value={visit.kilometres ?? ''}
                   onChange={(event) => updateVisitKilometres(visit.id, event.target.value)}
                 />
@@ -403,12 +411,12 @@ function App() {
 
               <div className="timestamps visit-detail">
                 <p>
-                  <span>Arrived</span>
-                  <strong>{visit.arrivedAt ? formatTime(visit.arrivedAt) : 'Not yet'}</strong>
+                  <span>{t('arrived')}</span>
+                  <strong>{visit.arrivedAt ? formatTime(visit.arrivedAt, locale) : t('notYet')}</strong>
                 </p>
                 <p>
-                  <span>Left</span>
-                  <strong>{visit.leftAt ? formatTime(visit.leftAt) : 'Not yet'}</strong>
+                  <span>{t('left')}</span>
+                  <strong>{visit.leftAt ? formatTime(visit.leftAt, locale) : t('notYet')}</strong>
                 </p>
               </div>
 
@@ -418,35 +426,35 @@ function App() {
           <div className="timeline-row route-stop next-home">
             <span className="dot" />
             <div>
-              <strong>Home</strong>
-              <span>End of route</span>
+              <strong>{t('home')}</strong>
+              <span>{t('endOfRoute')}</span>
             </div>
           </div>
 
               </section>
 
-              <div className="action-dock" aria-label="Current workday action">
+              <div className="action-dock" aria-label={t('currentAction')}>
                 {lastVisit && !lastVisit.arrivedAt && (
                   <button className="primary" onClick={() => recordVisitTime(lastVisit.id, 'arrivedAt')}>
-                    Arrived at {lastVisit.name}
+                    {t('arrivedAt', { name: lastVisit.name })}
                   </button>
                 )}
                 {lastVisit?.arrivedAt && !lastVisit.leftAt && (
                   <button className="primary" onClick={() => recordVisitTime(lastVisit.id, 'leftAt')}>
-                    Leave {lastVisit.name}
+                    {t('leaveCustomer', { name: lastVisit.name })}
                   </button>
                 )}
                 {canAddCustomer && (
                   <>
                     <button className="primary" onClick={openCustomerSheet}>
-                      Add next stop
+                      {t('addNextStop')}
                     </button>
                     <button
                       className="finish-workday-button"
                       onClick={() => setIsFinishSheetOpen(true)}
                       disabled={!canArriveHome}
                     >
-                      Finish workday at home
+                      {t('finishAtHome')}
                     </button>
                   </>
                 )}
@@ -455,7 +463,7 @@ function App() {
           )}
 
           {workday?.arrivedHomeAt && (
-            <button className="primary" onClick={startNewDay}>Start new day</button>
+            <button className="primary" onClick={startNewDay}>{t('startNewDay')}</button>
           )}
 
           {isCustomerSheetOpen && canAddCustomer && (
@@ -475,13 +483,13 @@ function App() {
                 <div className="sheet-handle" aria-hidden="true" />
                 <div className="sheet-heading">
                   <div>
-                    <p className="eyebrow">Next on your route</p>
-                    <h2 id="customer-sheet-title">Add customer</h2>
+                    <p className="eyebrow">{t('nextOnRoute')}</p>
+                    <h2 id="customer-sheet-title">{t('addCustomer')}</h2>
                   </div>
                   <button
                     className="close-sheet"
                     type="button"
-                    aria-label="Close"
+                    aria-label={t('close')}
                     onClick={() => setIsCustomerSheetOpen(false)}
                   >
                     ×
@@ -490,7 +498,7 @@ function App() {
 
                 {recentCustomers.length > 0 && (
                   <div className="recent-customers">
-                    <span>Recent customers</span>
+                    <span>{t('recentCustomers')}</span>
                     <div>
                       {recentCustomers.map((customerName) => (
                         <button
@@ -507,7 +515,7 @@ function App() {
 
                 <form className="add-customer" onSubmit={addCustomer}>
                   <label>
-                    Customer name
+                    {t('customerName')}
                     <input
                       id="customer-name"
                       autoComplete="organization"
@@ -517,18 +525,18 @@ function App() {
                     />
                   </label>
                   <label>
-                    {nextKilometresLegLabel(workday.visits, name)}
+                    {nextKilometresLegLabel(workday.visits, name, t)}
                     <input
                       type="number"
                       inputMode="decimal"
                       min="0"
                       step="0.1"
-                      placeholder="Optional"
+                      placeholder={t('optional')}
                       value={kilometres}
                       onChange={(event) => setKilometres(event.target.value)}
                     />
                   </label>
-                  <button className="primary" type="submit">Add to route</button>
+                  <button className="primary" type="submit">{t('addToRoute')}</button>
                 </form>
               </section>
             </div>
@@ -551,13 +559,13 @@ function App() {
                 <div className="sheet-handle" aria-hidden="true" />
                 <div className="sheet-heading">
                   <div>
-                    <p className="eyebrow">Final step</p>
-                    <h2 id="finish-sheet-title">Finish workday</h2>
+                    <p className="eyebrow">{t('finalStep')}</p>
+                    <h2 id="finish-sheet-title">{t('finishWorkday')}</h2>
                   </div>
                   <button
                     className="close-sheet"
                     type="button"
-                    aria-label="Close"
+                    aria-label={t('close')}
                     onClick={() => setIsFinishSheetOpen(false)}
                   >
                     ×
@@ -565,23 +573,23 @@ function App() {
                 </div>
 
                 <p className="sheet-description">
-                  Record the final journey, then complete today’s workday.
+                  {t('finishDescription')}
                 </p>
                 <label className="kilometres-field">
-                  {homeKilometresLegLabel(workday.visits)}
+                  {homeKilometresLegLabel(workday.visits, t)}
                   <input
                     type="number"
                     inputMode="decimal"
                     min="0"
                     step="0.1"
                     autoFocus
-                    placeholder="Optional"
+                    placeholder={t('optional')}
                     value={workday.kilometresHome ?? ''}
                     onChange={(event) => updateHomeKilometres(event.target.value)}
                   />
                 </label>
                 <button className="primary finish-confirm" type="button" onClick={arriveHome}>
-                  Confirm and finish workday
+                  {t('confirmFinish')}
                 </button>
               </section>
             </div>
@@ -592,18 +600,18 @@ function App() {
       {activeView === 'history' && (
         <section className="history view" aria-labelledby="history-title">
           <div className="section-heading">
-            <p className="eyebrow">Completed days</p>
-            <h2 id="history-title">History</h2>
+            <p className="eyebrow">{t('completedDays')}</p>
+            <h2 id="history-title">{t('history')}</h2>
             <p className="status">
               {history.length
-                ? `${history.length} saved workday${history.length === 1 ? '' : 's'}`
-                : 'Your completed workdays will appear here.'}
+                ? t(history.length === 1 ? 'savedWorkdays' : 'savedWorkdaysPlural', { count: history.length })
+                : t('emptyHistory')}
             </p>
           </div>
 
           {history.length > 0 && (
             <>
-              <button className="secondary export-button" type="button" onClick={exportCsv}>Export CSV</button>
+              <button className="secondary export-button" type="button" onClick={exportCsv}>{t('exportCsv')}</button>
 
               <div className="history-list">
             {history.map((day) => {
@@ -613,17 +621,17 @@ function App() {
                 <details className="history-card" key={day.id}>
                   <summary>
                     <div>
-                      <strong>{formatDate(day.leftHomeAt)}</strong>
-                      <span>{formatClock(day.leftHomeAt)}–{formatClock(day.arrivedHomeAt)}</span>
-                      <span>{day.visits.length} customer{day.visits.length === 1 ? '' : 's'}</span>
+                      <strong>{formatDate(day.leftHomeAt, locale)}</strong>
+                      <span>{formatClock(day.leftHomeAt, locale)}–{formatClock(day.arrivedHomeAt, locale)}</span>
+                      <span>{t(day.visits.length === 1 ? 'customerCount' : 'customerCountPlural', { count: day.visits.length })}</span>
                     </div>
-                    <span className="history-total">{total === null ? 'No km recorded' : `${total} km`}</span>
+                    <span className="history-total">{total === null ? t('noKmRecorded') : `${total} km`}</span>
                   </summary>
 
                   <div className="history-details">
                     <div className="history-times">
-                      <p><span>Left home</span><strong>{formatTime(day.leftHomeAt)}</strong></p>
-                      <p><span>Arrived home</span><strong>{formatTime(day.arrivedHomeAt)}</strong></p>
+                      <p><span>{t('leftHome')}</span><strong>{formatTime(day.leftHomeAt, locale)}</strong></p>
+                      <p><span>{t('arrivedHome')}</span><strong>{formatTime(day.arrivedHomeAt, locale)}</strong></p>
                     </div>
 
                     <div className="history-visits">
@@ -631,17 +639,17 @@ function App() {
                         <article className="history-visit" key={visit.id}>
                           <h3>{index + 1}. {visit.name}</h3>
                           <div className="history-times">
-                            <p><span>Arrived</span><strong>{visit.arrivedAt ? formatTime(visit.arrivedAt) : 'Not recorded'}</strong></p>
-                            <p><span>Left</span><strong>{visit.leftAt ? formatTime(visit.leftAt) : 'Not recorded'}</strong></p>
+                            <p><span>{t('arrived')}</span><strong>{visit.arrivedAt ? formatTime(visit.arrivedAt, locale) : t('notRecorded')}</strong></p>
+                            <p><span>{t('left')}</span><strong>{visit.leftAt ? formatTime(visit.leftAt, locale) : t('notRecorded')}</strong></p>
                           </div>
                           <label className="kilometres-field">
-                            {kilometresLegLabel(day.visits, index)}
+                            {kilometresLegLabel(day.visits, index, t)}
                             <input
                               type="number"
                               inputMode="decimal"
                               min="0"
                               step="0.1"
-                              placeholder="Unknown for now"
+                              placeholder={t('unknownForNow')}
                               value={visit.kilometres ?? ''}
                               onChange={(event) => updateHistoryVisitKilometres(day.id, visit.id, event.target.value)}
                             />
@@ -651,13 +659,13 @@ function App() {
                     </div>
 
                     <label className="kilometres-field">
-                      {homeKilometresLegLabel(day.visits)}
+                      {homeKilometresLegLabel(day.visits, t)}
                       <input
                         type="number"
                         inputMode="decimal"
                         min="0"
                         step="0.1"
-                        placeholder="Unknown for now"
+                        placeholder={t('unknownForNow')}
                         value={day.kilometresHome ?? ''}
                         onChange={(event) => updateHistoryHomeKilometres(day.id, event.target.value)}
                       />
@@ -667,7 +675,7 @@ function App() {
                       type="button"
                       onClick={() => deleteHistoryDay(day.id)}
                     >
-                      Delete day
+                      {t('deleteDay')}
                     </button>
                   </div>
                 </details>
@@ -679,7 +687,37 @@ function App() {
         </section>
       )}
 
-      <nav className="bottom-nav" aria-label="Primary navigation">
+      {activeView === 'options' && (
+        <section className="options view" aria-labelledby="options-title">
+          <div className="section-heading">
+            <p className="eyebrow">{t('options')}</p>
+            <h2 id="options-title">{t('preferences')}</h2>
+            <p className="status">{t('languageDescription')}</p>
+          </div>
+
+          <fieldset className="language-panel">
+            <legend>{t('language')}</legend>
+            {languageOptions.map((option) => (
+              <label className="language-option" key={option.value}>
+                <input
+                  type="radio"
+                  name="language"
+                  value={option.value}
+                  checked={language === option.value}
+                  onChange={(event) => setLanguage(event.target.value)}
+                />
+                <span>
+                  <strong>{t(option.value === 'en' ? 'english' : 'spanish')}</strong>
+                  <small>{option.nativeLabel}</small>
+                </span>
+              </label>
+            ))}
+            <p>{t('savedAutomatically')}</p>
+          </fieldset>
+        </section>
+      )}
+
+      <nav className="bottom-nav" aria-label={t('primaryNavigation')}>
         <button
           className={activeView === 'today' ? 'active' : ''}
           type="button"
@@ -687,7 +725,7 @@ function App() {
           aria-current={activeView === 'today' ? 'page' : undefined}
         >
           <span aria-hidden="true">⌂</span>
-          Today
+          {t('today')}
         </button>
         <button
           className={activeView === 'history' ? 'active' : ''}
@@ -696,7 +734,16 @@ function App() {
           aria-current={activeView === 'history' ? 'page' : undefined}
         >
           <span aria-hidden="true">◷</span>
-          History
+          {t('history')}
+        </button>
+        <button
+          className={activeView === 'options' ? 'active' : ''}
+          type="button"
+          onClick={() => setActiveView('options')}
+          aria-current={activeView === 'options' ? 'page' : undefined}
+        >
+          <span aria-hidden="true">⚙</span>
+          {t('options')}
         </button>
       </nav>
 
