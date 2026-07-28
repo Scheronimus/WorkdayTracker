@@ -42,6 +42,7 @@ Workday:
   leftHomeAt: String | null, // ISO timestamp
   arrivedHomeAt: String | null,
   kilometresHome: Number | null,
+  note: String,
   visits: CustomerVisit[]
 }
 ```
@@ -58,7 +59,7 @@ Customer visit:
 }
 ```
 
-Kilometre values may remain `null` and can be edited later. Customer names and recorded timestamps are not editable after creation.
+Kilometre values may remain `null` and can be edited later. The optional workday note is automatically persisted while typing and remains editable in History. Customer names and recorded timestamps are not editable after creation.
 
 ## History management
 

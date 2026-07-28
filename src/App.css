@@ -23,6 +23,22 @@ h1 { margin: 5px 0 8px; font-size: clamp(2rem, 10vw, 2.75rem); line-height: 1; l
 .day-overview div { display: grid; gap: 4px; padding: 13px 10px; background: #fff; }
 .day-overview span { color: #6a7470; font-size: 0.7rem; }
 .day-overview strong { font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+.day-note-button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 11px;
+  margin: -10px 0 20px;
+  padding: 9px 13px;
+  color: #155b4b;
+  border: 1px solid #cfe1dc;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 4px 14px rgba(37, 61, 55, 0.05);
+}
+.day-note-button > span:first-child { font-size: 1.15rem; }
+.day-note-button > span:last-child { display: grid; gap: 1px; }
+.day-note-button small { color: #6a7470; font-weight: 600; }
 
 button, input { font: inherit; }
 button { width: 100%; min-height: 50px; border-radius: 14px; border: 0; font-weight: 750; cursor: pointer; }
@@ -174,6 +190,28 @@ h2 { margin: 0; font-size: 1.08rem; }
 }
 .finish-sheet .kilometres-field { margin-bottom: 18px; }
 .finish-confirm { min-height: 56px; }
+.note-sheet textarea,
+.history-note-field textarea {
+  width: 100%;
+  min-height: 132px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid #cbd7d3;
+  border-radius: 12px;
+  color: #18221f;
+  background: #fff;
+  font: inherit;
+  line-height: 1.45;
+}
+.note-sheet textarea:focus-visible,
+.history-note-field textarea:focus-visible { outline: 3px solid #75c9b5; outline-offset: 2px; }
+.autosave-status {
+  margin: 9px 2px 0;
+  color: #66706c;
+  font-size: 0.78rem;
+  text-align: right;
+}
+.autosave-status span { color: #176b58; font-weight: 800; }
 
 @keyframes fade-in {
   from { opacity: 0; }
@@ -203,6 +241,15 @@ h2 { margin: 0; font-size: 1.08rem; }
 .history-times p { display: grid; gap: 2px; margin: 0; font-size: 0.78rem; }
 .history-times span { color: #6a7470; }
 .history-times strong { font-size: 0.8rem; }
+.history-note-field {
+  display: grid;
+  gap: 7px;
+  padding-top: 16px;
+  border-top: 1px solid #edf1ef;
+  color: #3d4844;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
 .history-visits { display: grid; gap: 0; width: 100%; margin: 0; padding: 0; }
 .history-visit { display: grid; width: 100%; gap: 12px; margin: 0; padding: 16px 0; border-top: 1px solid #edf1ef; }
 .history-visit:last-child { padding-bottom: 0; }

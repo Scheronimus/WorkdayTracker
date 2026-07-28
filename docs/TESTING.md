@@ -49,6 +49,15 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] In expanded History, edit and clear both types of kilometre value and confirm totals update.
 - [ ] Refresh and confirm History kilometre edits persist.
 
+## Day note
+
+- [ ] During an active workday, select “Add day note” and confirm the note sheet opens.
+- [ ] Enter a multiline note, close the sheet, and confirm the action changes to “Edit day note” with a saved indicator.
+- [ ] Reopen the note, edit it, refresh the app, and confirm the latest text persists.
+- [ ] Finish the workday, open it in History, and confirm the note is displayed and remains editable.
+- [ ] Export History and confirm the day note is included in the CSV.
+- [ ] Switch to Español (España) and confirm the complete note workflow is translated.
+
 ## Finish workday
 
 - [ ] Confirm “Finish workday at home” is unavailable while a customer is present but has not been left.

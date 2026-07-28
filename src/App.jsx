@@ -99,6 +99,7 @@ function emptyWorkday() {
     leftHomeAt: null,
     arrivedHomeAt: null,
     kilometresHome: null,
+    note: '',
     visits: [],
   }
 }
@@ -109,6 +110,7 @@ function App() {
   const [now, setNow] = useState(() => Date.now())
   const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false)
   const [isFinishSheetOpen, setIsFinishSheetOpen] = useState(false)
+  const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false)
   const [workday, setWorkday] = useState(() => readStorage(STORAGE_KEY, null))
   const [history, setHistory] = useState(() => {
     const savedHistory = readStorage(HISTORY_KEY, [])
@@ -221,11 +223,25 @@ function App() {
     }
   }
 
+  function updateWorkdayNote(value) {
+    setWorkday((current) => ({ ...current, note: value }))
+  }
+
+  function updateHistoryNote(dayId, value) {
+    setHistory((current) => current.map((day) =>
+      day.id === dayId ? { ...day, note: value } : day,
+    ))
+    if (workday?.id === dayId && workday.arrivedHomeAt) {
+      setWorkday((current) => ({ ...current, note: value }))
+    }
+  }
+
   function arriveHome() {
     const completed = { ...workday, arrivedHomeAt: new Date().toISOString() }
     setWorkday(completed)
     setHistory((current) => [completed, ...current.filter((day) => day.id !== completed.id)])
     setIsFinishSheetOpen(false)
+    setIsNoteSheetOpen(false)
   }
 
   function updateHistoryVisitKilometres(dayId, visitId, value) {
@@ -265,6 +281,7 @@ function App() {
     setKilometres('')
     setIsCustomerSheetOpen(false)
     setIsFinishSheetOpen(false)
+    setIsNoteSheetOpen(false)
     setWorkday(emptyWorkday())
   }
 
@@ -286,6 +303,7 @@ function App() {
       t('csvPreviousStop'),
       t('csvArriveHome'),
       t('csvFinalJourney'),
+      t('csvDayNote'),
     ]
 
     const rows = history.flatMap((day) => {
@@ -300,6 +318,7 @@ function App() {
         visit?.kilometres ?? '',
         csvTime(day.arrivedHomeAt, locale),
         day.kilometresHome ?? '',
+        day.note ?? '',
       ])
     })
 
@@ -351,6 +370,16 @@ function App() {
                 <strong>{totalKilometres(workday) ?? '—'} km</strong>
               </div>
             </section>
+          )}
+
+          {workday?.leftHomeAt && !workday.arrivedHomeAt && (
+            <button className="day-note-button" type="button" onClick={() => setIsNoteSheetOpen(true)}>
+              <span aria-hidden="true">✎</span>
+              <span>
+                <strong>{workday.note?.trim() ? t('editDayNote') : t('addDayNote')}</strong>
+                {workday.note?.trim() && <small>{t('noteAdded')}</small>}
+              </span>
+            </button>
           )}
 
           {(!workday || !workday.leftHomeAt) && (
@@ -542,6 +571,49 @@ function App() {
             </div>
           )}
 
+          {isNoteSheetOpen && workday?.leftHomeAt && !workday.arrivedHomeAt && (
+            <div
+              className="sheet-backdrop"
+              role="presentation"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) setIsNoteSheetOpen(false)
+              }}
+            >
+              <section
+                className="customer-sheet note-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="note-sheet-title"
+              >
+                <div className="sheet-handle" aria-hidden="true" />
+                <div className="sheet-heading">
+                  <div>
+                    <p className="eyebrow">{t('workdayInProgress')}</p>
+                    <h2 id="note-sheet-title">{t('dayNote')}</h2>
+                  </div>
+                  <button
+                    className="close-sheet"
+                    type="button"
+                    aria-label={t('close')}
+                    onClick={() => setIsNoteSheetOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <p className="sheet-description">{t('dayNoteDescription')}</p>
+                <textarea
+                  autoFocus
+                  value={workday.note ?? ''}
+                  placeholder={t('dayNotePlaceholder')}
+                  onChange={(event) => updateWorkdayNote(event.target.value)}
+                />
+                <p className="autosave-status">
+                  <span aria-hidden="true">✓</span> {t('noteSavedAutomatically')}
+                </p>
+              </section>
+            </div>
+          )}
+
           {isFinishSheetOpen && canArriveHome && (
             <div
               className="sheet-backdrop"
@@ -624,6 +696,7 @@ function App() {
                       <strong>{formatDate(day.leftHomeAt, locale)}</strong>
                       <span>{formatClock(day.leftHomeAt, locale)}–{formatClock(day.arrivedHomeAt, locale)}</span>
                       <span>{t(day.visits.length === 1 ? 'customerCount' : 'customerCountPlural', { count: day.visits.length })}</span>
+                      {day.note?.trim() && <span>{t('noteAdded')}</span>}
                     </div>
                     <span className="history-total">{total === null ? t('noKmRecorded') : `${total} km`}</span>
                   </summary>
@@ -633,6 +706,15 @@ function App() {
                       <p><span>{t('leftHome')}</span><strong>{formatTime(day.leftHomeAt, locale)}</strong></p>
                       <p><span>{t('arrivedHome')}</span><strong>{formatTime(day.arrivedHomeAt, locale)}</strong></p>
                     </div>
+
+                    <label className="history-note-field">
+                      {t('dayNote')}
+                      <textarea
+                        value={day.note ?? ''}
+                        placeholder={t('dayNotePlaceholder')}
+                        onChange={(event) => updateHistoryNote(day.id, event.target.value)}
+                      />
+                    </label>
 
                     <div className="history-visits">
                       {day.visits.map((visit, index) => (

@@ -7,6 +7,7 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Record leaving home and arriving home with timestamps.
 - Add sequential customer visits and record arrival and departure times.
 - Record optional kilometres between stops and from the final customer to home.
+- Add and edit an automatically saved note for the whole workday.
 - Keep completed workdays in persistent, expandable history.
 - Edit kilometre values in active and completed workdays.
 - Delete individual completed workdays after confirmation.
