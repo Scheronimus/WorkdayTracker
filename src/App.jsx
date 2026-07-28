@@ -322,7 +322,7 @@ function App() {
             <p className="eyebrow">Today on the road</p>
             <h1>Workday tracker</h1>
             <p className="status">
-              {(!workday || !workday.leftHomeAt) && 'Ready when you are.'}
+              {(!workday || !workday.leftHomeAt) && 'No workday in progress'}
               {workday?.leftHomeAt && !workday.arrivedHomeAt && 'Workday in progress'}
               {workday?.arrivedHomeAt && 'Workday complete'}
             </p>
