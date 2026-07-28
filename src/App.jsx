@@ -90,6 +90,7 @@ function emptyWorkday() {
 function App() {
   const [activeView, setActiveView] = useState('today')
   const [now, setNow] = useState(() => Date.now())
+  const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false)
   const [workday, setWorkday] = useState(() => readStorage(STORAGE_KEY, null))
   const [history, setHistory] = useState(() => {
     const savedHistory = readStorage(HISTORY_KEY, [])
@@ -120,6 +121,15 @@ function App() {
   const canAddCustomer = workday?.leftHomeAt && !workday.arrivedHomeAt && (!lastVisit || lastVisit.leftAt)
   const canArriveHome = canAddCustomer
   const completedVisits = workday?.visits.filter((visit) => visit.leftAt).length ?? 0
+  const recentCustomers = [...(workday?.visits ?? []), ...history.flatMap((day) => day.visits)]
+    .map((visit) => visit.name)
+    .filter((customerName, index, names) =>
+      customerName.toLocaleLowerCase() !== name.trim().toLocaleLowerCase()
+      && names.findIndex((candidate) =>
+        candidate.toLocaleLowerCase() === customerName.toLocaleLowerCase(),
+      ) === index,
+    )
+    .slice(0, 5)
 
   function leaveHome() {
     setWorkday((current) => ({
@@ -147,6 +157,7 @@ function App() {
     }))
     setName('')
     setKilometres('')
+    setIsCustomerSheetOpen(false)
   }
 
   function recordVisitTime(id, field) {
@@ -227,6 +238,7 @@ function App() {
   function startNewDay() {
     setName('')
     setKilometres('')
+    setIsCustomerSheetOpen(false)
     setWorkday(emptyWorkday())
   }
 
@@ -279,8 +291,9 @@ function App() {
     URL.revokeObjectURL(url)
   }
 
-  function focusCustomerForm() {
-    document.querySelector('#customer-name')?.focus()
+  function openCustomerSheet() {
+    setIsCustomerSheetOpen(true)
+    window.setTimeout(() => document.querySelector('#customer-name')?.focus(), 0)
   }
 
   return (
@@ -376,29 +389,6 @@ function App() {
             </article>
           ))}
 
-          {canAddCustomer && (
-            <form className="add-customer" onSubmit={addCustomer}>
-              <h2>Add customer</h2>
-              <label>
-                Customer name
-                <input id="customer-name" value={name} onChange={(event) => setName(event.target.value)} required />
-              </label>
-              <label>
-                Kilometres from previous stop
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  step="0.1"
-                  placeholder="Unknown for now"
-                  value={kilometres}
-                  onChange={(event) => setKilometres(event.target.value)}
-                />
-              </label>
-              <button className="secondary" type="submit">Add customer</button>
-            </form>
-          )}
-
           <div className="timeline-row route-stop next-home">
             <span className="dot" />
             <div>
@@ -436,7 +426,7 @@ function App() {
                 )}
                 {canAddCustomer && (
                   <>
-                    <button className="primary" onClick={focusCustomerForm}>
+                    <button className="primary" onClick={openCustomerSheet}>
                       Add next stop
                     </button>
                     <button className="dock-link" onClick={arriveHome} disabled={!canArriveHome}>
@@ -450,6 +440,82 @@ function App() {
 
           {workday?.arrivedHomeAt && (
             <button className="primary" onClick={startNewDay}>Start new day</button>
+          )}
+
+          {isCustomerSheetOpen && canAddCustomer && (
+            <div
+              className="sheet-backdrop"
+              role="presentation"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) setIsCustomerSheetOpen(false)
+              }}
+            >
+              <section
+                className="customer-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="customer-sheet-title"
+              >
+                <div className="sheet-handle" aria-hidden="true" />
+                <div className="sheet-heading">
+                  <div>
+                    <p className="eyebrow">Next on your route</p>
+                    <h2 id="customer-sheet-title">Add customer</h2>
+                  </div>
+                  <button
+                    className="close-sheet"
+                    type="button"
+                    aria-label="Close"
+                    onClick={() => setIsCustomerSheetOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {recentCustomers.length > 0 && (
+                  <div className="recent-customers">
+                    <span>Recent customers</span>
+                    <div>
+                      {recentCustomers.map((customerName) => (
+                        <button
+                          type="button"
+                          key={customerName}
+                          onClick={() => setName(customerName)}
+                        >
+                          {customerName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <form className="add-customer" onSubmit={addCustomer}>
+                  <label>
+                    Customer name
+                    <input
+                      id="customer-name"
+                      autoComplete="organization"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Kilometres from previous stop
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      step="0.1"
+                      placeholder="Optional"
+                      value={kilometres}
+                      onChange={(event) => setKilometres(event.target.value)}
+                    />
+                  </label>
+                  <button className="primary" type="submit">Add to route</button>
+                </form>
+              </section>
+            </div>
           )}
         </div>
       )}
