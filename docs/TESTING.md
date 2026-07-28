@@ -91,7 +91,7 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 ## Language
 
-- [ ] Open Options, choose Español, and confirm Today, History, Options, dialogs, journey labels, and dates switch to Spanish immediately.
+- [ ] Open Options, choose Español (España), and confirm the Today, History, and Options sections, dialogs, journey labels, and dates switch immediately using Spanish (Spain) conventions.
 - [ ] Refresh and restart the app, then confirm Spanish remains selected.
 - [ ] Export History in Spanish and confirm the CSV filename and column headings are translated.
 - [ ] Choose English and confirm the complete interface returns to English and remains English after refresh.
