@@ -6,6 +6,7 @@
   "scripts": {
     "start": "vite --open",
     "mobile": "node scripts/mobile-server.mjs",
+    "generate:production-qr": "node scripts/generate-production-qr.mjs",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",

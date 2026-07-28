@@ -108,6 +108,7 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 ## PWA installation
 
+- [ ] Scan the production QR code in the README and confirm it opens `https://scheronimus.github.io/WorkdayTracker/`.
 - [ ] Build and serve the production application, then confirm the browser offers PWA installation where supported.
 - [ ] On iPhone or iPad, open Options and confirm the Share → Add to Home Screen instructions appear.
 - [ ] On a supported Chromium browser, open Options and confirm the install button opens the native installation prompt.

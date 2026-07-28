@@ -48,6 +48,16 @@ Keep the launcher window open while testing. Press `Ctrl+C` in that window to st
 
 Connect the computer and phone to the same Wi-Fi, then double-click **`Start Workday Tracker on Mobile.cmd`**. Scan the QR code displayed in the terminal with the phone camera. There is no URL to type.
 
+### Production app on mobile
+
+Scan this QR code with the phone camera to open the deployed application:
+
+<img src="docs/production-app-qr.svg" width="220" alt="QR code for the deployed Workday Tracker application" />
+
+[Open Workday Tracker](https://scheronimus.github.io/WorkdayTracker/)
+
+On iPhone or iPad, open **Options** in the app and follow the instructions to add it to the Home Screen.
+
 ### Command line
 
 ```sh
