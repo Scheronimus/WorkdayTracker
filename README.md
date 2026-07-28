@@ -41,6 +41,10 @@ Double-click **`Start Workday Tracker.cmd`** in the project folder. The launcher
 
 Keep the launcher window open while testing. Press `Ctrl+C` in that window to stop the app.
 
+### One-click mobile testing
+
+Connect the computer and phone to the same Wi-Fi, then double-click **`Start Workday Tracker on Mobile.cmd`**. Scan the QR code displayed in the terminal with the phone camera. There is no URL to type.
+
 ### Command line
 
 ```sh

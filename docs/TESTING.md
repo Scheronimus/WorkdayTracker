@@ -10,6 +10,8 @@ From a terminal, the equivalent command is:
 npm start
 ```
 
+To test on a phone, connect the phone and computer to the same Wi-Fi and double-click **`Start Workday Tracker on Mobile.cmd`**. Scan the QR code in the terminal with the phone camera. Keep the terminal open during testing.
+
 Run these checks in a modern browser. Use a production build served with `npm run preview` for PWA and offline checks.
 
 ## Initial state and start new day
