@@ -29,7 +29,14 @@ const server = await createServer({
 
 await server.listen()
 
-const port = server.config.server.port
+const serverAddress = server.httpServer?.address()
+if (!serverAddress || typeof serverAddress === 'string') {
+  console.error('The mobile test server started, but its network port could not be determined.')
+  await server.close()
+  process.exit(1)
+}
+
+const port = serverAddress.port
 const base = server.config.base
 const mobileUrl = `http://${addresses[0].address}:${port}${base}`
 

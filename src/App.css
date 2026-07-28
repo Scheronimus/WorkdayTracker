@@ -39,6 +39,30 @@ h1 { margin: 5px 0 8px; font-size: clamp(2rem, 10vw, 2.75rem); line-height: 1; l
 .day-note-button > span:first-child { font-size: 1.15rem; }
 .day-note-button > span:last-child { display: grid; gap: 1px; }
 .day-note-button small { color: #6a7470; font-weight: 600; }
+.long-workday-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: -8px 0 20px;
+  padding: 12px 13px;
+  border: 1px solid #e6ca82;
+  border-radius: 14px;
+  color: #624b14;
+  background: #fff8df;
+}
+.long-workday-warning > span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #9a6d00;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+.long-workday-warning p { margin: 1px 0 0; font-size: 0.82rem; line-height: 1.4; }
 
 button, input { font: inherit; }
 button { width: 100%; min-height: 50px; border-radius: 14px; border: 0; font-weight: 750; cursor: pointer; }

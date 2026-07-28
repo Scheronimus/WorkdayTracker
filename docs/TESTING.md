@@ -36,15 +36,16 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 ## Customer timestamps
 
-- [ ] Select “Arrive now” and confirm an arrival timestamp appears.
-- [ ] Confirm “Leave now” becomes available only after arrival.
-- [ ] Select “Leave now” and confirm a departure timestamp appears.
+- [ ] Select “Arrived at [customer]” and confirm an arrival timestamp appears.
+- [ ] Confirm “Leave [customer]” becomes available only after arrival.
+- [ ] Select “Leave [customer]” and confirm a departure timestamp appears.
 - [ ] Refresh and confirm all recorded timestamps remain unchanged.
+- [ ] Keep or simulate an active workday lasting eight hours and confirm the long-workday warning appears without ending the workday.
 
 ## Edit kilometres
 
 - [ ] Enter, change, and clear kilometres on an active customer visit.
-- [ ] Enter, change, and clear kilometres from the last customer to home.
+- [ ] In the finish-workday sheet, enter, change, and clear kilometres from the final customer to home.
 - [ ] Confirm empty kilometre values remain valid and do not block any action.
 - [ ] In expanded History, edit and clear both types of kilometre value and confirm totals update.
 - [ ] Refresh and confirm History kilometre edits persist.

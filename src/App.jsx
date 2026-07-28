@@ -147,6 +147,9 @@ function App() {
   const canAddCustomer = workday?.leftHomeAt && !workday.arrivedHomeAt && (!lastVisit || lastVisit.leftAt)
   const canArriveHome = canAddCustomer
   const completedVisits = workday?.visits.filter((visit) => visit.leftAt).length ?? 0
+  const isLongWorkday = workday?.leftHomeAt
+    && !workday.arrivedHomeAt
+    && now - new Date(workday.leftHomeAt).getTime() >= 8 * 60 * 60 * 1000
   const recentCustomers = [...(workday?.visits ?? []), ...history.flatMap((day) => day.visits)]
     .map((visit) => visit.name)
     .filter((customerName, index, names) =>
@@ -380,6 +383,13 @@ function App() {
                 {workday.note?.trim() && <small>{t('noteAdded')}</small>}
               </span>
             </button>
+          )}
+
+          {isLongWorkday && (
+            <aside className="long-workday-warning" role="status">
+              <span aria-hidden="true">!</span>
+              <p>{t('longWorkdayWarning')}</p>
+            </aside>
           )}
 
           {(!workday || !workday.leftHomeAt) && (
