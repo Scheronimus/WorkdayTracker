@@ -39,6 +39,12 @@ function formatClock(timestamp) {
   }).format(new Date(timestamp))
 }
 
+function formatDuration(start, end) {
+  if (!start) return '0h 00m'
+  const minutes = Math.max(0, Math.floor((new Date(end) - new Date(start)) / 60000))
+  return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`
+}
+
 function totalKilometres(day) {
   const values = [
     ...day.visits.map((visit) => visit.kilometres),
@@ -83,6 +89,7 @@ function emptyWorkday() {
 
 function App() {
   const [activeView, setActiveView] = useState('today')
+  const [now, setNow] = useState(() => Date.now())
   const [workday, setWorkday] = useState(() => readStorage(STORAGE_KEY, null))
   const [history, setHistory] = useState(() => {
     const savedHistory = readStorage(HISTORY_KEY, [])
@@ -103,9 +110,16 @@ function App() {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history))
   }, [history])
 
+  useEffect(() => {
+    if (!workday?.leftHomeAt || workday.arrivedHomeAt) return undefined
+    const timer = window.setInterval(() => setNow(Date.now()), 30000)
+    return () => window.clearInterval(timer)
+  }, [workday?.leftHomeAt, workday?.arrivedHomeAt])
+
   const lastVisit = workday?.visits.at(-1)
   const canAddCustomer = workday?.leftHomeAt && !workday.arrivedHomeAt && (!lastVisit || lastVisit.leftAt)
   const canArriveHome = canAddCustomer
+  const completedVisits = workday?.visits.filter((visit) => visit.leftAt).length ?? 0
 
   function leaveHome() {
     setWorkday((current) => ({
@@ -265,6 +279,10 @@ function App() {
     URL.revokeObjectURL(url)
   }
 
+  function focusCustomerForm() {
+    document.querySelector('#customer-name')?.focus()
+  }
+
   return (
     <main className="app-shell">
       {activeView === 'today' && (
@@ -279,6 +297,23 @@ function App() {
             </p>
           </header>
 
+          {workday?.leftHomeAt && !workday.arrivedHomeAt && (
+            <section className="day-overview" aria-label="Workday progress">
+              <div>
+                <span>On the road</span>
+                <strong>{formatDuration(workday.leftHomeAt, now)}</strong>
+              </div>
+              <div>
+                <span>Customers</span>
+                <strong>{completedVisits}/{workday.visits.length}</strong>
+              </div>
+              <div>
+                <span>Distance</span>
+                <strong>{totalKilometres(workday) ?? '—'} km</strong>
+              </div>
+            </section>
+          )}
+
           {(!workday || !workday.leftHomeAt) && (
             <button className="primary start-button" onClick={leaveHome}>
               Leave home now
@@ -286,25 +321,35 @@ function App() {
           )}
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (
-            <section className="timeline" aria-label="Workday timeline">
-          <div className="timeline-row home-row">
-            <span className="dot" />
-            <div>
-              <strong>Left home</strong>
-              <time dateTime={workday.leftHomeAt}>{formatTime(workday.leftHomeAt)}</time>
-            </div>
-          </div>
+            <>
+              <section className="timeline" aria-label="Workday route">
+                <div className="timeline-row home-row route-stop complete">
+                  <span className="dot" />
+                  <div>
+                    <strong>Home</strong>
+                    <time dateTime={workday.leftHomeAt}>Left {formatClock(workday.leftHomeAt)}</time>
+                  </div>
+                </div>
 
           {workday.visits.map((visit, index) => (
-            <article className="visit-card" key={visit.id}>
+            <article
+              className={`visit-card route-stop ${visit.leftAt ? 'complete compact' : 'current'}`}
+              key={visit.id}
+            >
               <div className="visit-heading">
-                <span className="visit-number">{index + 1}</span>
+                <span className="visit-number">{visit.leftAt ? '✓' : index + 1}</span>
                 <div>
                   <h2>{visit.name}</h2>
+                  {visit.leftAt && (
+                    <p className="visit-summary">
+                      {formatClock(visit.arrivedAt)}–{formatClock(visit.leftAt)}
+                      {visit.kilometres !== null ? ` · ${visit.kilometres} km` : ''}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <label className="kilometres-field">
+              <label className="kilometres-field visit-detail">
                 Kilometres from previous stop
                 <input
                   type="number"
@@ -317,7 +362,7 @@ function App() {
                 />
               </label>
 
-              <div className="timestamps">
+              <div className="timestamps visit-detail">
                 <p>
                   <span>Arrived</span>
                   <strong>{visit.arrivedAt ? formatTime(visit.arrivedAt) : 'Not yet'}</strong>
@@ -328,16 +373,6 @@ function App() {
                 </p>
               </div>
 
-              {!visit.arrivedAt && (
-                <button className="secondary" onClick={() => recordVisitTime(visit.id, 'arrivedAt')}>
-                  Arrive now
-                </button>
-              )}
-              {visit.arrivedAt && !visit.leftAt && (
-                <button className="secondary" onClick={() => recordVisitTime(visit.id, 'leftAt')}>
-                  Leave now
-                </button>
-              )}
             </article>
           ))}
 
@@ -346,7 +381,7 @@ function App() {
               <h2>Add customer</h2>
               <label>
                 Customer name
-                <input value={name} onChange={(event) => setName(event.target.value)} required />
+                <input id="customer-name" value={name} onChange={(event) => setName(event.target.value)} required />
               </label>
               <label>
                 Kilometres from previous stop
@@ -364,6 +399,14 @@ function App() {
             </form>
           )}
 
+          <div className="timeline-row route-stop next-home">
+            <span className="dot" />
+            <div>
+              <strong>Home</strong>
+              <span>End of route</span>
+            </div>
+          </div>
+
           <div className="home-actions">
             <label className="kilometres-field">
               Kilometres from last customer to home
@@ -377,11 +420,32 @@ function App() {
                 onChange={(event) => updateHomeKilometres(event.target.value)}
               />
             </label>
-            <button className="primary" onClick={arriveHome} disabled={!canArriveHome}>
-              Arrive home now
-            </button>
           </div>
-            </section>
+              </section>
+
+              <div className="action-dock" aria-label="Current workday action">
+                {lastVisit && !lastVisit.arrivedAt && (
+                  <button className="primary" onClick={() => recordVisitTime(lastVisit.id, 'arrivedAt')}>
+                    Arrived at {lastVisit.name}
+                  </button>
+                )}
+                {lastVisit?.arrivedAt && !lastVisit.leftAt && (
+                  <button className="primary" onClick={() => recordVisitTime(lastVisit.id, 'leftAt')}>
+                    Leave {lastVisit.name}
+                  </button>
+                )}
+                {canAddCustomer && (
+                  <>
+                    <button className="primary" onClick={focusCustomerForm}>
+                      Add next stop
+                    </button>
+                    <button className="dock-link" onClick={arriveHome} disabled={!canArriveHome}>
+                      Finish workday at home
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
           )}
 
           {workday?.arrivedHomeAt && (
