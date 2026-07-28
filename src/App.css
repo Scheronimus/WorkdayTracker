@@ -2,8 +2,9 @@
   width: min(100%, 430px);
   min-height: 100svh;
   margin: 0 auto;
-  padding: 28px 18px 48px;
+  padding: 28px 18px 118px;
 }
+.view { animation: view-in 180ms ease-out; }
 
 .app-header { margin-bottom: 28px; }
 .eyebrow { color: #147d64; font-size: 0.78rem; font-weight: 750; letter-spacing: 0.09em; text-transform: uppercase; }
@@ -39,7 +40,7 @@ h2 { margin: 0; font-size: 1.08rem; }
 .visit-card > .kilometres-field { margin-top: 16px; }
 .home-actions { display: grid; gap: 12px; padding-top: 4px; }
 
-.history { margin-top: 42px; padding-top: 28px; border-top: 1px solid #d8e1de; }
+.history { min-height: 70svh; }
 .section-heading { margin-bottom: 16px; }
 .section-heading .eyebrow { margin: 0 0 4px; }
 .section-heading h2 { font-size: 1.5rem; }
@@ -65,6 +66,41 @@ h2 { margin: 0; font-size: 1.08rem; }
 .history-visit .history-times { padding-top: 0; }
 .delete-day-button { color: #8a3030; border: 1px solid #e3c5c5; background: transparent; }
 .app-version { margin-top: 32px; color: #89918e; font-size: 0.72rem; text-align: center; }
+.bottom-nav {
+  position: fixed;
+  z-index: 20;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  width: min(100%, 430px);
+  margin: 0 auto;
+  padding: 8px 18px max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid #dce5e2;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+}
+.bottom-nav button {
+  display: grid;
+  min-height: 58px;
+  place-items: center;
+  gap: 2px;
+  border-radius: 12px;
+  color: #6a7470;
+  background: transparent;
+  font-size: 0.75rem;
+}
+.bottom-nav button span { font-size: 1.35rem; line-height: 1; }
+.bottom-nav button.active { color: #176b58; background: #e8f5f1; }
+
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view { animation: none; }
+}
 
 @media (min-width: 600px) {
   .app-shell { padding-top: 50px; }

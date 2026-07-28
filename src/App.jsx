@@ -82,6 +82,7 @@ function emptyWorkday() {
 }
 
 function App() {
+  const [activeView, setActiveView] = useState('today')
   const [workday, setWorkday] = useState(() => readStorage(STORAGE_KEY, null))
   const [history, setHistory] = useState(() => {
     const savedHistory = readStorage(HISTORY_KEY, [])
@@ -266,24 +267,26 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="app-header">
-        <p className="eyebrow">Today on the road</p>
-        <h1>Workday tracker</h1>
-        <p className="status">
-          {(!workday || !workday.leftHomeAt) && 'Ready when you are.'}
-          {workday?.leftHomeAt && !workday.arrivedHomeAt && 'Workday in progress'}
-          {workday?.arrivedHomeAt && 'Workday complete'}
-        </p>
-      </header>
+      {activeView === 'today' && (
+        <div className="view">
+          <header className="app-header">
+            <p className="eyebrow">Today on the road</p>
+            <h1>Workday tracker</h1>
+            <p className="status">
+              {(!workday || !workday.leftHomeAt) && 'Ready when you are.'}
+              {workday?.leftHomeAt && !workday.arrivedHomeAt && 'Workday in progress'}
+              {workday?.arrivedHomeAt && 'Workday complete'}
+            </p>
+          </header>
 
-      {(!workday || !workday.leftHomeAt) && (
-        <button className="primary start-button" onClick={leaveHome}>
-          Leave home now
-        </button>
-      )}
+          {(!workday || !workday.leftHomeAt) && (
+            <button className="primary start-button" onClick={leaveHome}>
+              Leave home now
+            </button>
+          )}
 
-      {workday?.leftHomeAt && !workday.arrivedHomeAt && (
-        <section className="timeline" aria-label="Workday timeline">
+          {workday?.leftHomeAt && !workday.arrivedHomeAt && (
+            <section className="timeline" aria-label="Workday timeline">
           <div className="timeline-row home-row">
             <span className="dot" />
             <div>
@@ -378,23 +381,32 @@ function App() {
               Arrive home now
             </button>
           </div>
-        </section>
+            </section>
+          )}
+
+          {workday?.arrivedHomeAt && (
+            <button className="primary" onClick={startNewDay}>Start new day</button>
+          )}
+        </div>
       )}
 
-      {workday?.arrivedHomeAt && (
-        <button className="primary" onClick={startNewDay}>Start new day</button>
-      )}
-
-      {history.length > 0 && (
-        <section className="history" aria-labelledby="history-title">
+      {activeView === 'history' && (
+        <section className="history view" aria-labelledby="history-title">
           <div className="section-heading">
             <p className="eyebrow">Completed days</p>
             <h2 id="history-title">History</h2>
+            <p className="status">
+              {history.length
+                ? `${history.length} saved workday${history.length === 1 ? '' : 's'}`
+                : 'Your completed workdays will appear here.'}
+            </p>
           </div>
 
-          <button className="secondary export-button" type="button" onClick={exportCsv}>Export CSV</button>
+          {history.length > 0 && (
+            <>
+              <button className="secondary export-button" type="button" onClick={exportCsv}>Export CSV</button>
 
-          <div className="history-list">
+              <div className="history-list">
             {history.map((day) => {
               const total = totalKilometres(day)
 
@@ -462,9 +474,32 @@ function App() {
                 </details>
               )
             })}
-          </div>
+              </div>
+            </>
+          )}
         </section>
       )}
+
+      <nav className="bottom-nav" aria-label="Primary navigation">
+        <button
+          className={activeView === 'today' ? 'active' : ''}
+          type="button"
+          onClick={() => setActiveView('today')}
+          aria-current={activeView === 'today' ? 'page' : undefined}
+        >
+          <span aria-hidden="true">⌂</span>
+          Today
+        </button>
+        <button
+          className={activeView === 'history' ? 'active' : ''}
+          type="button"
+          onClick={() => setActiveView('history')}
+          aria-current={activeView === 'history' ? 'page' : undefined}
+        >
+          <span aria-hidden="true">◷</span>
+          History
+        </button>
+      </nav>
 
       <footer className="app-version">v{packageJson.version}</footer>
     </main>
