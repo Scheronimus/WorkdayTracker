@@ -30,7 +30,31 @@ button:focus-visible, input:focus-visible { outline: 3px solid #75c9b5; outline-
 button:disabled { cursor: not-allowed; opacity: 0.45; }
 .primary { color: #fff; background: #176b58; box-shadow: 0 7px 18px rgba(23, 107, 88, 0.2); }
 .secondary { color: #155b4b; background: #dff2ed; }
-.start-button { margin-top: 20vh; }
+.prepared-day {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  margin-top: 48px;
+  padding: 20px;
+  border: 1px solid #d6e4df;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 10px 32px rgba(37, 61, 55, 0.07);
+}
+.prepared-day-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #176b58;
+  font-weight: 800;
+}
+.prepared-day .eyebrow { margin: 1px 0 5px; }
+.prepared-day h2 { font-size: 1.15rem; }
+.prepared-day p:not(.eyebrow) { margin: 8px 0 0; color: #66706c; font-size: 0.88rem; }
+.prepared-day .start-button { grid-column: 1 / -1; margin-top: 8px; }
 
 .timeline { display: grid; gap: 0; padding-bottom: 108px; }
 .timeline-row { display: flex; align-items: center; gap: 12px; padding: 4px 6px; }

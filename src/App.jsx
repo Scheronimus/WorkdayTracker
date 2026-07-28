@@ -322,7 +322,7 @@ function App() {
             <p className="eyebrow">Today on the road</p>
             <h1>Workday tracker</h1>
             <p className="status">
-              {(!workday || !workday.leftHomeAt) && 'No workday in progress'}
+              {(!workday || !workday.leftHomeAt) && 'Workday ready'}
               {workday?.leftHomeAt && !workday.arrivedHomeAt && 'Workday in progress'}
               {workday?.arrivedHomeAt && 'Workday complete'}
             </p>
@@ -346,9 +346,17 @@ function App() {
           )}
 
           {(!workday || !workday.leftHomeAt) && (
-            <button className="primary start-button" onClick={leaveHome}>
-              Leave home now
-            </button>
+            <section className="prepared-day" aria-labelledby="prepared-day-title">
+              <div className="prepared-day-icon" aria-hidden="true">✓</div>
+              <div>
+                <p className="eyebrow">Prepared for</p>
+                <h2 id="prepared-day-title">{formatDate(now)}</h2>
+                <p>Start the workday when you leave home.</p>
+              </div>
+              <button className="primary start-button" onClick={leaveHome}>
+                Leave home now
+              </button>
+            </section>
           )}
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (

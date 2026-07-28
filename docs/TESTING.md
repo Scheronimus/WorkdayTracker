@@ -14,9 +14,9 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 ## Initial state and start new day
 
-- [ ] With no saved data, confirm the initial screen shows “Leave home now.”
+- [ ] With no saved data, confirm today’s date, “Workday ready,” and “Leave home now” are shown.
 - [ ] Select “Leave home now” and confirm the workday begins with a visible timestamp.
-- [ ] Complete a day, select “Start new day,” and confirm a fresh day is shown without deleting History.
+- [ ] Complete a day, select “Start new day,” and confirm a prepared workday for today is shown without deleting History.
 - [ ] Refresh before leaving home and confirm the fresh current day remains available.
 
 ## Add customer
