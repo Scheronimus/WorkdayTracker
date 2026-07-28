@@ -54,6 +54,21 @@ function totalKilometres(day) {
   return values.length ? values.reduce((total, value) => total + Number(value), 0) : null
 }
 
+function kilometresLegLabel(visits, index) {
+  const from = index === 0 ? 'home' : visits[index - 1].name
+  return `Kilometres from ${from} to ${visits[index].name}`
+}
+
+function nextKilometresLegLabel(visits, nextCustomerName) {
+  const from = visits.length ? visits.at(-1).name : 'home'
+  return `Kilometres from ${from} to ${nextCustomerName.trim() || 'next customer'}`
+}
+
+function homeKilometresLegLabel(visits) {
+  const from = visits.length ? visits.at(-1).name : 'home'
+  return `Kilometres from ${from} to home`
+}
+
 function csvDate(timestamp) {
   const date = new Date(timestamp)
   const year = date.getFullYear()
@@ -366,7 +381,7 @@ function App() {
               </div>
 
               <label className="kilometres-field visit-detail">
-                Kilometres from previous stop
+                {kilometresLegLabel(workday.visits, index)}
                 <input
                   type="number"
                   inputMode="decimal"
@@ -494,7 +509,7 @@ function App() {
                     />
                   </label>
                   <label>
-                    Kilometres from previous stop
+                    {nextKilometresLegLabel(workday.visits, name)}
                     <input
                       type="number"
                       inputMode="decimal"
@@ -545,7 +560,7 @@ function App() {
                   Record the final journey, then complete today’s workday.
                 </p>
                 <label className="kilometres-field">
-                  Kilometres from last stop to home
+                  {homeKilometresLegLabel(workday.visits)}
                   <input
                     type="number"
                     inputMode="decimal"
@@ -612,7 +627,7 @@ function App() {
                             <p><span>Left</span><strong>{visit.leftAt ? formatTime(visit.leftAt) : 'Not recorded'}</strong></p>
                           </div>
                           <label className="kilometres-field">
-                            Kilometres from previous stop
+                            {kilometresLegLabel(day.visits, index)}
                             <input
                               type="number"
                               inputMode="decimal"
@@ -628,7 +643,7 @@ function App() {
                     </div>
 
                     <label className="kilometres-field">
-                      Kilometres from last customer to home
+                      {homeKilometresLegLabel(day.visits)}
                       <input
                         type="number"
                         inputMode="decimal"
