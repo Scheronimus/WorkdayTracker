@@ -7,11 +7,14 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Record leaving home and arriving home with timestamps.
 - Add sequential customer visits and record arrival and departure times.
 - Record optional kilometres between stops and from the final customer to home.
+- Add and edit an automatically saved note for the whole workday.
 - Keep completed workdays in persistent, expandable history.
 - Edit kilometre values in active and completed workdays.
 - Delete individual completed workdays after confirmation.
 - Export all completed workdays as CSV.
+- Switch between English and Spanish (Spain) from Options, with the preference saved locally.
 - Install as a Progressive Web App (PWA) and use the cached application shell offline.
+- Follow the in-app iPhone/iPad installation guidance from Options.
 
 ## Technology stack
 
@@ -34,6 +37,34 @@ npm ci
 ```
 
 ## Run locally
+
+### One-click start on Windows
+
+Double-click **`Start Workday Tracker.cmd`** in the project folder. The launcher installs dependencies when needed, starts the local server, and opens the app in your default browser.
+
+Keep the launcher window open while testing. Press `Ctrl+C` in that window to stop the app.
+
+### One-click mobile testing
+
+Connect the computer and phone to the same Wi-Fi, then double-click **`Start Workday Tracker on Mobile.cmd`**. Scan the QR code displayed in the terminal with the phone camera. There is no URL to type.
+
+### Production app on mobile
+
+Scan this QR code with the phone camera to open the deployed application:
+
+<img src="docs/production-app-qr.svg" width="220" alt="QR code for the deployed Workday Tracker application" />
+
+[Open Workday Tracker](https://scheronimus.github.io/WorkdayTracker/)
+
+On iPhone or iPad, open **Options** in the app and follow the instructions to add it to the Home Screen.
+
+### Command line
+
+```sh
+npm start
+```
+
+The browser opens automatically. To start without opening a browser:
 
 ```sh
 npm run dev
