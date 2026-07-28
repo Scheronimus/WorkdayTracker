@@ -91,6 +91,7 @@ function App() {
   const [activeView, setActiveView] = useState('today')
   const [now, setNow] = useState(() => Date.now())
   const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false)
+  const [isFinishSheetOpen, setIsFinishSheetOpen] = useState(false)
   const [workday, setWorkday] = useState(() => readStorage(STORAGE_KEY, null))
   const [history, setHistory] = useState(() => {
     const savedHistory = readStorage(HISTORY_KEY, [])
@@ -201,6 +202,7 @@ function App() {
     const completed = { ...workday, arrivedHomeAt: new Date().toISOString() }
     setWorkday(completed)
     setHistory((current) => [completed, ...current.filter((day) => day.id !== completed.id)])
+    setIsFinishSheetOpen(false)
   }
 
   function updateHistoryVisitKilometres(dayId, visitId, value) {
@@ -239,6 +241,7 @@ function App() {
     setName('')
     setKilometres('')
     setIsCustomerSheetOpen(false)
+    setIsFinishSheetOpen(false)
     setWorkday(emptyWorkday())
   }
 
@@ -397,20 +400,6 @@ function App() {
             </div>
           </div>
 
-          <div className="home-actions">
-            <label className="kilometres-field">
-              Kilometres from last customer to home
-              <input
-                type="number"
-                inputMode="decimal"
-                min="0"
-                step="0.1"
-                placeholder="Unknown for now"
-                value={workday.kilometresHome ?? ''}
-                onChange={(event) => updateHomeKilometres(event.target.value)}
-              />
-            </label>
-          </div>
               </section>
 
               <div className="action-dock" aria-label="Current workday action">
@@ -429,7 +418,11 @@ function App() {
                     <button className="primary" onClick={openCustomerSheet}>
                       Add next stop
                     </button>
-                    <button className="dock-link" onClick={arriveHome} disabled={!canArriveHome}>
+                    <button
+                      className="finish-workday-button"
+                      onClick={() => setIsFinishSheetOpen(true)}
+                      disabled={!canArriveHome}
+                    >
                       Finish workday at home
                     </button>
                   </>
@@ -514,6 +507,59 @@ function App() {
                   </label>
                   <button className="primary" type="submit">Add to route</button>
                 </form>
+              </section>
+            </div>
+          )}
+
+          {isFinishSheetOpen && canArriveHome && (
+            <div
+              className="sheet-backdrop"
+              role="presentation"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) setIsFinishSheetOpen(false)
+              }}
+            >
+              <section
+                className="customer-sheet finish-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="finish-sheet-title"
+              >
+                <div className="sheet-handle" aria-hidden="true" />
+                <div className="sheet-heading">
+                  <div>
+                    <p className="eyebrow">Final step</p>
+                    <h2 id="finish-sheet-title">Finish workday</h2>
+                  </div>
+                  <button
+                    className="close-sheet"
+                    type="button"
+                    aria-label="Close"
+                    onClick={() => setIsFinishSheetOpen(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <p className="sheet-description">
+                  Record the final journey, then complete today’s workday.
+                </p>
+                <label className="kilometres-field">
+                  Kilometres from last stop to home
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.1"
+                    autoFocus
+                    placeholder="Optional"
+                    value={workday.kilometresHome ?? ''}
+                    onChange={(event) => updateHomeKilometres(event.target.value)}
+                  />
+                </label>
+                <button className="primary finish-confirm" type="button" onClick={arriveHome}>
+                  Confirm and finish workday
+                </button>
               </section>
             </div>
           )}

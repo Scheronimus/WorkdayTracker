@@ -49,8 +49,11 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 ## Finish workday
 
-- [ ] Confirm “Arrive home now” is disabled while a customer is present but has not been left.
-- [ ] Select “Arrive home now” after leaving the final customer, with the home kilometre field empty.
+- [ ] Confirm “Finish workday at home” is unavailable while a customer is present but has not been left.
+- [ ] Confirm the final-journey kilometre field is not displayed in the active route.
+- [ ] Select “Finish workday at home” and confirm the finish sheet opens with the optional “Kilometres from last stop to home” field.
+- [ ] Close the finish sheet and confirm the active workday remains unchanged.
+- [ ] Open the finish sheet again, enter a kilometre value, and select “Confirm and finish workday.”
 - [ ] Confirm the active-day details disappear and only “Start new day” remains for the current day.
 - [ ] Confirm the completed day is added to History immediately.
 
