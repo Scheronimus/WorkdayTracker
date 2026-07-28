@@ -14,6 +14,11 @@ function readStorage(key, fallback) {
   }
 }
 
+function readLanguage() {
+  const savedLanguage = readStorage(LANGUAGE_KEY, 'en')
+  return Object.hasOwn(locales, savedLanguage) ? savedLanguage : 'en'
+}
+
 function formatTime(timestamp, locale) {
   return new Intl.DateTimeFormat(locale, {
     day: '2-digit',
@@ -106,7 +111,7 @@ function emptyWorkday() {
 
 function App() {
   const [activeView, setActiveView] = useState('today')
-  const [language, setLanguage] = useState(() => readStorage(LANGUAGE_KEY, 'en'))
+  const [language, setLanguage] = useState(readLanguage)
   const [now, setNow] = useState(() => Date.now())
   const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false)
   const [isFinishSheetOpen, setIsFinishSheetOpen] = useState(false)
@@ -137,6 +142,20 @@ function App() {
     localStorage.setItem(LANGUAGE_KEY, JSON.stringify(language))
     document.documentElement.lang = language
   }, [language])
+
+  useEffect(() => {
+    function refreshCurrentTime() {
+      if (!document.hidden) setNow(Date.now())
+    }
+
+    window.addEventListener('focus', refreshCurrentTime)
+    document.addEventListener('visibilitychange', refreshCurrentTime)
+    return () => {
+      window.removeEventListener('focus', refreshCurrentTime)
+      document.removeEventListener('visibilitychange', refreshCurrentTime)
+    }
+  }, [])
+
   useEffect(() => {
     if (!workday?.leftHomeAt || workday.arrivedHomeAt) return undefined
     const timer = window.setInterval(() => setNow(Date.now()), 30000)
@@ -285,6 +304,7 @@ function App() {
     setIsCustomerSheetOpen(false)
     setIsFinishSheetOpen(false)
     setIsNoteSheetOpen(false)
+    setNow(Date.now())
     setWorkday(emptyWorkday())
   }
 
