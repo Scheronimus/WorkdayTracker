@@ -251,6 +251,39 @@ h2 { margin: 0; font-size: 1.08rem; }
 .section-heading .eyebrow { margin: 0 0 4px; }
 .section-heading h2 { font-size: 1.5rem; }
 .export-button { margin-bottom: 12px; }
+.import-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid #cfe1dc;
+  border-radius: 16px;
+  background: #f7fbfa;
+}
+.import-panel h3,
+.import-panel p { margin: 0; }
+.import-panel h3 { font-size: 1rem; }
+.import-panel > div p { margin-top: 5px; color: #5f6c67; font-size: 0.82rem; line-height: 1.45; }
+.import-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.import-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.import-status { padding: 10px 12px; border-radius: 10px; font-size: 0.82rem; line-height: 1.4; }
+.import-status.success { color: #155f4e; background: #ddf3ed; }
+.import-status.info { color: #47534f; background: #e9efed; }
+.import-status.error { color: #862f2f; background: #f9e3e3; }
 .history-list { display: grid; gap: 12px; }
 .history-card { overflow: hidden; border: 1px solid #dde5e2; border-radius: 16px; background: #fff; box-shadow: 0 6px 20px rgba(37, 61, 55, 0.05); }
 .history-card summary { position: relative; display: flex; justify-content: space-between; gap: 12px; padding: 16px 16px 16px 40px; cursor: pointer; list-style: none; }
