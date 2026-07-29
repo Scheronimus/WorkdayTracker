@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import packageJson from '../package.json'
 import { importWorkdaysFromCsv } from './csvImport'
 import { LANGUAGE_KEY, languageOptions, locales, translate } from './i18n'
@@ -140,6 +140,10 @@ function App() {
   const locale = locales[language] ?? locales.en
   const iosDevice = isIosDevice()
   const t = (key, replacements) => translate(language, key, replacements)
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [activeView])
 
   useEffect(() => {
     if (workday) {
