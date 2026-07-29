@@ -74,4 +74,12 @@ CSV export runs entirely in the browser. It produces one row per customer visit 
 
 ## PWA support
 
+`deployment.config.mjs` is the source of truth for the repository name, production origin, base path, production URL, and deployment-relative asset URLs. Vite, the PWA manifest, and production QR generation consume that module directly. Automated tests verify that runtime consumers do not duplicate the deployment identity and that deployment guidance remains consistent with it.
+
 `vite-plugin-pwa` is configured in `vite.config.js` with automatic service-worker updates. The generated manifest identifies the app as “Workday Tracker,” uses standalone display mode, and sets both scope and start URL to `/WorkdayTracker/`. The production build generates the service worker and precaches the built application assets, supporting installation and offline loading of the cached application shell.
+
+## Production diagnostics
+
+Workday Tracker intentionally has no analytics, telemetry, or remote error reporting. It is a small, client-only application whose locally stored customer names, notes, routes, and timestamps may be sensitive. Adding diagnostics would introduce data-governance, consent, and operational responsibilities that are not justified by the application’s current scale.
+
+This decision should be reconsidered if the application gains a backend or accounts, its user base grows substantially, production failures become difficult to diagnose, or a clear need emerges for consent-based, privacy-preserving error reporting. Any future diagnostics must exclude customer names, notes, routes, timestamps, and stored workday data by default.

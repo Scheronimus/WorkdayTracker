@@ -1,0 +1,84 @@
+# Technical debt
+
+This register tracks known, non-blocking engineering risks. Items belong here when the current behaviour is acceptable for production but the implementation, resilience, or maintainability should improve. Product defects and urgent security issues should be tracked separately and fixed promptly.
+
+Priority meanings:
+
+- **High:** address before the application or its data model grows substantially.
+- **Medium:** plan when working in the affected area.
+- **Low:** worthwhile improvement with limited current impact.
+
+## Open items
+
+### TD-001 — Local-only data has limited recovery
+
+- **Priority:** High
+- **Area:** Data resilience
+- **Risk:** Workdays are stored only in `localStorage`. Removing an installed web app, clearing website data, changing origin, or losing the device can make data unavailable.
+- **Current mitigation:** Users can export completed history as CSV and import that CSV into another installation.
+- **Remaining gap:** CSV does not preserve an unfinished current workday, application preferences, or explicit data-format metadata.
+- **Suggested completion criteria:** Provide a versioned full backup and restore format covering current workday, history, and preferences; validate it before import and document the recovery workflow.
+
+### TD-002 — Persisted data has no explicit schema version
+
+- **Priority:** High
+- **Area:** Data integrity
+- **Risk:** Application updates read stored objects directly. Future model changes could require migrations, while malformed but valid JSON may reach rendering and update logic.
+- **Current mitigation:** JSON parsing failures fall back to safe defaults, and new optional fields use fallbacks.
+- **Suggested completion criteria:** Store a schema version, validate persisted objects, and add tested forward migrations for every breaking model change.
+
+### TD-003 — PWA updates are opaque on iOS
+
+- **Priority:** Medium
+- **Area:** PWA lifecycle
+- **Risk:** Service-worker activation timing, cached versions, fixed Home Screen icons, and multiple installations can make users unsure which version and data container they are using.
+- **Current mitigation:** The application displays its version and uses automatic service-worker updates.
+- **Suggested completion criteria:** Detect a waiting update, show an “Update available” action, document iOS multiple-install behaviour, and test upgrades from the previous production release.
+
+### TD-004 — CSV is a positional, localized interchange format
+
+- **Priority:** Medium
+- **Area:** Import/export
+- **Risk:** Import relies on the existing nine- or ten-column order. Spreadsheet edits, future columns, or additional translations could make otherwise recognizable exports invalid.
+- **Current mitigation:** The importer validates the file, supports the legacy and current English/Spanish exports, handles quoted fields, skips duplicate IDs, and never replaces existing history silently.
+- **Suggested completion criteria:** Add a format/version marker or stable machine-readable headers, retain backward compatibility tests, and expose row-specific validation errors.
+
+### TD-005 — Core application component is too large
+
+- **Priority:** Medium
+- **Area:** Maintainability
+- **Risk:** `src/App.jsx` owns persistence, domain transitions, PWA installation, CSV workflows, translations, and most interface rendering. Changes in one concern can cause regressions elsewhere.
+- **Current mitigation:** CSV parsing is isolated in its own tested module.
+- **Suggested completion criteria:** Extract persistence and workday-domain hooks, then split Today, History, Options, and modal sheets into focused components without changing behaviour.
+
+### TD-006 — Automated coverage is narrow
+
+- **Priority:** Medium
+- **Area:** Quality assurance
+- **Risk:** Most workday transitions, persistence, translations, accessibility, service-worker upgrades, and mobile layouts depend on manual regression testing.
+- **Current mitigation:** Tests, ESLint, and production builds run in CI; CSV parsing and deployment identity have automated coverage; `docs/TESTING.md` contains a manual checklist.
+- **Suggested completion criteria:** Add component tests for critical workday flows and import confirmation, plus a small browser-level suite covering persistence, language switching, and an upgrade from stored legacy data.
+
+## Maintenance rules
+
+- Review this file during production-readiness reviews and before minor releases.
+- Add an owner or target release when an item is scheduled.
+- Link the implementing pull request or commit when closing an item.
+- Remove completed items from **Open items** and record them below with the completion date.
+
+## Completed items
+
+### TD-007 — Deployment identity is duplicated in configuration
+
+- **Completed:** 2026-07-29
+- **Implementation:** Commit `7955c9a` (`Centralize deployment configuration`).
+- **Resolution:** Added `deployment.config.mjs` as the source of truth for the repository name, production origin, base path, production URL, and deployment-relative assets. Vite/PWA configuration and QR generation consume it directly.
+- **Verification:** Automated tests validate the derived identity, reject duplicated runtime values, and ensure deployment guidance matches the central configuration.
+
+### TD-008 — No production diagnostics
+
+- **Completed:** 2026-07-29
+- **Implementation:** Commit `63e87b4` (`Document telemetry-free architecture decision`).
+- **Decision:** Accepted—no diagnostics at present.
+- **Resolution:** Workday Tracker remains telemetry-free while it is a small, client-only application. This avoids collecting or risking exposure of potentially sensitive customer, note, route, timestamp, and workday data and avoids introducing consent infrastructure without a demonstrated need.
+- **Reconsider when:** The application gains a backend or accounts, its user base grows substantially, production failures become difficult to diagnose, or consent-based privacy-preserving reporting becomes operationally justified.

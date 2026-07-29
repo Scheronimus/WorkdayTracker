@@ -1,16 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#176b58"/>
-  <path
-    d="M156 142c0 72 200 42 200 114s-200 42-200 114"
-    fill="none"
-    stroke="#bde4da"
-    stroke-linecap="round"
-    stroke-width="28"
-  />
-  <circle cx="156" cy="142" r="42" fill="#fff"/>
-  <circle cx="356" cy="256" r="42" fill="#fff"/>
-  <circle cx="156" cy="370" r="42" fill="#fff"/>
-  <path d="m132 145 24-21 24 21v25h-48z" fill="#176b58"/>
-  <path d="m332 259 24-21 24 21v25h-48z" fill="#176b58"/>
-  <path d="m132 373 24-21 24 21v25h-48z" fill="#176b58"/>
+  <title>Workday Tracker</title>
+  <defs>
+    <linearGradient id="bg" x1="70" y1="50" x2="446" y2="460" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#312E81"/>
+    </linearGradient>
+    <linearGradient id="route" x1="105" y1="154" x2="407" y2="367" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#C4B5FD"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <path d="M104 161l73 206 79-151 79 151 73-206"
+        fill="none" stroke="url(#route)" stroke-width="45"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="104" cy="161" r="43" fill="#fff"/>
+  <path d="m82 164 22-20 22 20v23H82z" fill="#111827"/>
+  <circle cx="408" cy="161" r="43" fill="#fff"/>
+  <path d="M389 163h38M408 144v38" stroke="#312E81" stroke-width="12"
+        stroke-linecap="round"/>
+  <circle cx="256" cy="216" r="20" fill="#FBBF24" stroke="#fff" stroke-width="9"/>
 </svg>

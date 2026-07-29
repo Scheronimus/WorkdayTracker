@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import packageJson from '../package.json'
 import { importWorkdaysFromCsv } from './csvImport'
 import { LANGUAGE_KEY, languageOptions, locales, translate } from './i18n'
@@ -140,6 +140,10 @@ function App() {
   const locale = locales[language] ?? locales.en
   const iosDevice = isIosDevice()
   const t = (key, replacements) => translate(language, key, replacements)
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0)
+  }, [activeView])
 
   useEffect(() => {
     if (workday) {
@@ -638,7 +642,7 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsCustomerSheetOpen(false)}
                   >
-                    ×
+                    <span className="close-sheet-icon" aria-hidden="true" />
                   </button>
                 </div>
 
@@ -714,7 +718,7 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsNoteSheetOpen(false)}
                   >
-                    ×
+                    <span className="close-sheet-icon" aria-hidden="true" />
                   </button>
                 </div>
                 <p className="sheet-description">{t('dayNoteDescription')}</p>
@@ -757,7 +761,7 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsFinishSheetOpen(false)}
                   >
-                    ×
+                    <span className="close-sheet-icon" aria-hidden="true" />
                   </button>
                 </div>
 
