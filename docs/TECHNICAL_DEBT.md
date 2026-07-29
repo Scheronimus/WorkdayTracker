@@ -78,6 +78,7 @@ Priority meanings:
 ### TD-008 — No production diagnostics
 
 - **Completed:** 2026-07-29
+- **Implementation:** Commit `63e87b4` (`Document telemetry-free architecture decision`).
 - **Decision:** Accepted—no diagnostics at present.
 - **Resolution:** Workday Tracker remains telemetry-free while it is a small, client-only application. This avoids collecting or risking exposure of potentially sensitive customer, note, route, timestamp, and workday data and avoids introducing consent infrastructure without a demonstrated need.
 - **Reconsider when:** The application gains a backend or accounts, its user base grows substantially, production failures become difficult to diagnose, or consent-based privacy-preserving reporting becomes operationally justified.
