@@ -13,7 +13,7 @@ export default defineConfig({
         short_name: 'Workday',
         description: 'Simple workday and customer visit tracker',
         theme_color: '#111827',
-        background_color: '#f4f7f6',
+        background_color: '#f5f7fc',
         display: 'standalone',
         start_url: '/WorkdayTracker/',
         scope: '/WorkdayTracker/',

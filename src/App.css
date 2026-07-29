@@ -91,7 +91,6 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   height: 42px;
   place-items: center;
   border-radius: 50%;
-  color: #fff;
   background: linear-gradient(135deg, #67e8f9, #818cf8);
   color: #172033;
   font-weight: 800;
