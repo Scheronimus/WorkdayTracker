@@ -105,3 +105,9 @@ The workflow runs automatically for pushes to `main` and can also be started wit
 6. Deploys the artifact with `actions/deploy-pages` to the `github-pages` environment.
 
 Vite uses the base path `/WorkdayTracker/`. The PWA manifest uses the same start URL and scope. The deployed application is available at <https://scheronimus.github.io/WorkdayTracker/>.
+
+## Project documentation
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Testing and regression checklist](docs/TESTING.md)
+- [Technical debt register](docs/TECHNICAL_DEBT.md)
