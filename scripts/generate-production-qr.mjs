@@ -1,17 +1,17 @@
 import { createRequire } from 'node:module'
 import { writeFile } from 'node:fs/promises'
+import { deployment } from '../deployment.config.mjs'
 
 const require = createRequire(import.meta.url)
 const QRCode = require('qrcode-terminal/vendor/QRCode')
 const errorLevels = require('qrcode-terminal/vendor/QRCode/QRErrorCorrectLevel')
 
-const productionUrl = 'https://scheronimus.github.io/WorkdayTracker/'
 const outputPath = new URL('../docs/production-app-qr.svg', import.meta.url)
 const quietZone = 4
 const moduleSize = 10
 
 const qrCode = new QRCode(-1, errorLevels.M)
-qrCode.addData(productionUrl)
+qrCode.addData(deployment.productionUrl)
 qrCode.make()
 
 const moduleCount = qrCode.getModuleCount()
@@ -33,11 +33,11 @@ const svg = [
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${imageSize} ${imageSize}"`,
   ' role="img" aria-labelledby="title description" shape-rendering="crispEdges">',
   '<title id="title">Workday Tracker production QR code</title>',
-  `<desc id="description">Opens ${productionUrl}</desc>`,
+  `<desc id="description">Opens ${deployment.productionUrl}</desc>`,
   '<rect width="100%" height="100%" fill="#fff"/>',
   `<g fill="#102d26">${modules.join('')}</g>`,
   '</svg>',
 ].join('')
 
 await writeFile(outputPath, svg)
-console.log(`Generated ${outputPath.pathname} for ${productionUrl}`)
+console.log(`Generated ${outputPath.pathname} for ${deployment.productionUrl}`)
