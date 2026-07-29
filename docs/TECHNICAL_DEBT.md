@@ -59,14 +59,6 @@ Priority meanings:
 - **Current mitigation:** Tests, ESLint, and production builds run in CI; CSV parsing and deployment identity have automated coverage; `docs/TESTING.md` contains a manual checklist.
 - **Suggested completion criteria:** Add component tests for critical workday flows and import confirmation, plus a small browser-level suite covering persistence, language switching, and an upgrade from stored legacy data.
 
-### TD-008 — No production diagnostics
-
-- **Priority:** Low
-- **Area:** Operability
-- **Risk:** The client-only application has no privacy-conscious error reporting, so failures are known only when a user reports them.
-- **Current mitigation:** The application has a small surface area and avoids a backend or account data.
-- **Suggested completion criteria:** Decide explicitly whether diagnostics are warranted; if adopted, collect only minimal technical errors with consent and without customer names, notes, routes, or timestamps.
-
 ## Maintenance rules
 
 - Review this file during production-readiness reviews and before minor releases.
@@ -82,3 +74,10 @@ Priority meanings:
 - **Implementation:** Commit `7955c9a` (`Centralize deployment configuration`).
 - **Resolution:** Added `deployment.config.mjs` as the source of truth for the repository name, production origin, base path, production URL, and deployment-relative assets. Vite/PWA configuration and QR generation consume it directly.
 - **Verification:** Automated tests validate the derived identity, reject duplicated runtime values, and ensure deployment guidance matches the central configuration.
+
+### TD-008 — No production diagnostics
+
+- **Completed:** 2026-07-29
+- **Decision:** Accepted—no diagnostics at present.
+- **Resolution:** Workday Tracker remains telemetry-free while it is a small, client-only application. This avoids collecting or risking exposure of potentially sensitive customer, note, route, timestamp, and workday data and avoids introducing consent infrastructure without a demonstrated need.
+- **Reconsider when:** The application gains a backend or accounts, its user base grows substantially, production failures become difficult to diagnose, or consent-based privacy-preserving reporting becomes operationally justified.
