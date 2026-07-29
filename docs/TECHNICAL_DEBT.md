@@ -56,16 +56,8 @@ Priority meanings:
 - **Priority:** Medium
 - **Area:** Quality assurance
 - **Risk:** Most workday transitions, persistence, translations, accessibility, service-worker upgrades, and mobile layouts depend on manual regression testing.
-- **Current mitigation:** ESLint and production builds run in CI; CSV parsing has unit tests; `docs/TESTING.md` contains a manual checklist.
+- **Current mitigation:** Tests, ESLint, and production builds run in CI; CSV parsing and deployment identity have automated coverage; `docs/TESTING.md` contains a manual checklist.
 - **Suggested completion criteria:** Add component tests for critical workday flows and import confirmation, plus a small browser-level suite covering persistence, language switching, and an upgrade from stored legacy data.
-
-### TD-007 — Deployment identity is duplicated in configuration
-
-- **Priority:** Low
-- **Area:** Release engineering
-- **Risk:** Repository name, base path, production URL, QR generation, and documentation are maintained in several files. Moving or renaming the deployment could produce inconsistent links or PWA scope.
-- **Current mitigation:** Production build and deployment checks catch some path failures.
-- **Suggested completion criteria:** Define the production base/URL once and consume it from Vite configuration, QR generation, launch guidance, and documentation generation.
 
 ### TD-008 — No production diagnostics
 
@@ -84,4 +76,9 @@ Priority meanings:
 
 ## Completed items
 
-None yet.
+### TD-007 — Deployment identity is duplicated in configuration
+
+- **Completed:** 2026-07-29
+- **Implementation:** Commit `7955c9a` (`Centralize deployment configuration`).
+- **Resolution:** Added `deployment.config.mjs` as the source of truth for the repository name, production origin, base path, production URL, and deployment-relative assets. Vite/PWA configuration and QR generation consume it directly.
+- **Verification:** Automated tests validate the derived identity, reject duplicated runtime values, and ensure deployment guidance matches the central configuration.

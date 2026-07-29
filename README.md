@@ -100,11 +100,22 @@ The workflow runs automatically for pushes to `main` and can also be started wit
 1. Checks out the repository on Ubuntu.
 2. Configures Node.js 24 with npm caching.
 3. Installs locked dependencies with `npm ci`.
-4. Builds the application with `npm run build`.
-5. Configures GitHub Pages and uploads `dist/` as the Pages artifact.
-6. Deploys the artifact with `actions/deploy-pages` to the `github-pages` environment.
+4. Runs the automated tests, including deployment-identity consistency checks.
+5. Lints the project.
+6. Builds the application with `npm run build`.
+7. Configures GitHub Pages.
+8. Uploads `dist/` as the Pages artifact.
+9. Deploys the artifact with `actions/deploy-pages` to the `github-pages` environment.
+
+`deployment.config.mjs` is the source of truth for the repository name, production origin, base path, production URL, and deployment-relative asset paths. Vite, the PWA manifest, and production QR generation consume it directly. The automated tests also confirm that the deployment guidance below remains consistent with it.
 
 Vite uses the base path `/WorkdayTracker/`. The PWA manifest uses the same start URL and scope. The deployed application is available at <https://scheronimus.github.io/WorkdayTracker/>.
+
+After changing the deployment identity, regenerate the committed production QR code:
+
+```sh
+npm run generate:production-qr
+```
 
 ## Project documentation
 
