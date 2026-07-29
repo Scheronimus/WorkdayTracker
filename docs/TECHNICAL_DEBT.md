@@ -79,5 +79,6 @@ Priority meanings:
 ### TD-007 — Deployment identity is duplicated in configuration
 
 - **Completed:** 2026-07-29
+- **Implementation:** Commit `7955c9a` (`Centralize deployment configuration`).
 - **Resolution:** Added `deployment.config.mjs` as the source of truth for the repository name, production origin, base path, production URL, and deployment-relative assets. Vite/PWA configuration and QR generation consume it directly.
 - **Verification:** Automated tests validate the derived identity, reject duplicated runtime values, and ensure deployment guidance matches the central configuration.
