@@ -638,7 +638,7 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsCustomerSheetOpen(false)}
                   >
-                    ×
+                    <span className="close-sheet-icon" aria-hidden="true" />
                   </button>
                 </div>
 
@@ -714,7 +714,7 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsNoteSheetOpen(false)}
                   >
-                    ×
+                    <span className="close-sheet-icon" aria-hidden="true" />
                   </button>
                 </div>
                 <p className="sheet-description">{t('dayNoteDescription')}</p>
@@ -757,7 +757,7 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsFinishSheetOpen(false)}
                   >
-                    ×
+                    <span className="close-sheet-icon" aria-hidden="true" />
                   </button>
                 </div>
 
