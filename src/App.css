@@ -331,6 +331,29 @@ h2 { margin: 0; font-size: 1.08rem; }
 .history-card summary div { display: inline-grid; gap: 2px; margin: 0; }
 .history-card summary span { color: #667085; font-size: 0.82rem; }
 .history-card .history-total { align-self: center; flex: 0 0 auto; color: #4338ca; font-weight: 750; }
+.history-card.incomplete { border-color: #e7c46a; }
+.history-card .history-kilometres-warning {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  color: #8a5a00;
+  font-weight: 750;
+}
+.history-kilometres-warning::before {
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #b77900;
+  content: '!';
+  font-size: 0.68rem;
+  line-height: 1;
+}
 .history-details { display: grid; gap: 16px; padding: 0 16px 16px; border-top: 1px solid #eceef5; }
 .history-times { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 16px; }
 .history-times p { display: grid; gap: 2px; margin: 0; font-size: 0.78rem; }

@@ -71,6 +71,12 @@ function totalKilometres(day) {
   return values.length ? values.reduce((total, value) => total + Number(value), 0) : null
 }
 
+function hasMissingKilometres(day) {
+  const isMissing = (value) => value === null || value === undefined || value === ''
+  return day.visits.some((visit) => isMissing(visit.kilometres))
+    || isMissing(day.kilometresHome)
+}
+
 function kilometresLegLabel(visits, index, t) {
   const from = index === 0 ? t('homeLower') : visits[index - 1].name
   return t('kilometresLeg', { from, to: visits[index].name })
@@ -836,15 +842,19 @@ function App() {
               <div className="history-list">
             {history.map((day) => {
               const total = totalKilometres(day)
+              const kilometresIncomplete = hasMissingKilometres(day)
 
               return (
-                <details className="history-card" key={day.id}>
+                <details className={`history-card${kilometresIncomplete ? ' incomplete' : ''}`} key={day.id}>
                   <summary>
                     <div>
                       <strong>{formatDate(day.leftHomeAt, locale)}</strong>
                       <span>{formatClock(day.leftHomeAt, locale)}–{formatClock(day.arrivedHomeAt, locale)}</span>
                       <span>{t(day.visits.length === 1 ? 'customerCount' : 'customerCountPlural', { count: day.visits.length })}</span>
                       {day.note?.trim() && <span>{t('noteAdded')}</span>}
+                      {kilometresIncomplete && (
+                        <span className="history-kilometres-warning">{t('kilometresIncomplete')}</span>
+                      )}
                     </div>
                     <span className="history-total">{total === null ? t('noKmRecorded') : `${total} km`}</span>
                   </summary>

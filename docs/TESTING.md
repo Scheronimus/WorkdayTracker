@@ -75,6 +75,9 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 - [ ] Complete multiple workdays and confirm History displays newest first.
 - [ ] Confirm each collapsed entry shows its date, leave/arrival times, customer count, and recorded kilometre total when available.
+- [ ] Finish a day with any customer or final-journey kilometre field blank and confirm its collapsed History entry immediately shows “Kilometres incomplete.”
+- [ ] Enter `0` in every journey field and confirm the incomplete warning is not shown.
+- [ ] Fill the missing fields from History and confirm the warning disappears immediately; clear one again and confirm it returns.
 - [ ] Expand each entry and confirm all customer names, arrival/departure times, and kilometre fields are present.
 - [ ] Confirm a completed workday with no customers is displayed correctly.
 - [ ] Confirm History date headers remain horizontally aligned when entries are open or closed.
