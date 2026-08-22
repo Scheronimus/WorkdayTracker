@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 import packageJson from '../package.json'
 import { importWorkdaysFromCsv } from './csvImport'
 import { LANGUAGE_KEY, languageOptions, locales, translate } from './i18n'
+import { hasMissingKilometres } from './workday'
 import './App.css'
 
 const STORAGE_KEY = 'workday-tracker-current'
@@ -69,12 +70,6 @@ function totalKilometres(day) {
   ].filter((value) => value !== null && value !== undefined && value !== '')
 
   return values.length ? values.reduce((total, value) => total + Number(value), 0) : null
-}
-
-function hasMissingKilometres(day) {
-  const isMissing = (value) => value === null || value === undefined || value === ''
-  return day.visits.some((visit) => isMissing(visit.kilometres))
-    || isMissing(day.kilometresHome)
 }
 
 function kilometresLegLabel(visits, index, t) {
