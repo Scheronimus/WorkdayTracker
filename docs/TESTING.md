@@ -68,12 +68,16 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Close the finish sheet and confirm the active workday remains unchanged.
 - [ ] Open the finish sheet again, enter a kilometre value, and select “Confirm and finish workday.”
 - [ ] Confirm the active-day details disappear and only “Start new day” remains for the current day.
+- [ ] Confirm the Today header does not show a “Workday complete” status after finishing.
 - [ ] Confirm the completed day is added to History immediately.
 
 ## History
 
 - [ ] Complete multiple workdays and confirm History displays newest first.
 - [ ] Confirm each collapsed entry shows its date, leave/arrival times, customer count, and recorded kilometre total when available.
+- [ ] Finish a day with any customer or final-journey kilometre field blank and confirm its collapsed History entry immediately shows “Kilometres incomplete.”
+- [ ] Enter `0` in every journey field and confirm the incomplete warning is not shown.
+- [ ] Fill the missing fields from History and confirm the warning disappears immediately; clear one again and confirm it returns.
 - [ ] Expand each entry and confirm all customer names, arrival/departure times, and kilometre fields are present.
 - [ ] Confirm a completed workday with no customers is displayed correctly.
 - [ ] Confirm History date headers remain horizontally aligned when entries are open or closed.
@@ -93,6 +97,12 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Confirm empty kilometre fields remain empty in the CSV.
 - [ ] Use a customer name containing a comma, quote, or line break and confirm the resulting CSV remains correctly structured.
 
+## Import old history
+
+- [ ] Confirm “Import old history” appears under “Data transfer” in Options and no longer appears at the top of History.
+- [ ] Import a valid previous export and confirm the existing duplicate, confirmation, and status behaviour is unchanged.
+- [ ] Switch to Español (España) and confirm the complete Data transfer panel is translated.
+
 ## Persistence after restart
 
 - [ ] During an active day, close and reopen the browser or tab and confirm the current workday is restored.
@@ -105,6 +115,10 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Refresh and restart the app, then confirm Spanish remains selected.
 - [ ] Export History in Spanish and confirm the CSV filename and column headings are translated.
 - [ ] Choose English and confirm the complete interface returns to English and remains English after refresh.
+
+## Primary navigation
+
+- [ ] Confirm Today, History, and Options use consistently sized 2D outline icons in inactive and active states.
 
 ## PWA installation
 
