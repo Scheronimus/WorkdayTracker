@@ -120,6 +120,32 @@ function emptyWorkday() {
   }
 }
 
+function NavigationIcon({ name }) {
+  const paths = {
+    today: <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M9 21v-7h6v7" />,
+    history: (
+      <>
+        <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+        <path d="M3 3v5h5M12 7v5l3 2" />
+      </>
+    ),
+    options: (
+      <>
+        <path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h7M15 18h5" />
+        <circle cx="16" cy="6" r="2" />
+        <circle cx="8" cy="12" r="2" />
+        <circle cx="13" cy="18" r="2" />
+      </>
+    ),
+  }
+
+  return (
+    <svg className="navigation-icon" viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  )
+}
+
 function App() {
   const [activeView, setActiveView] = useState('today')
   const [language, setLanguage] = useState(readLanguage)
@@ -462,11 +488,12 @@ function App() {
           <header className="app-header">
             <p className="eyebrow">{t('todayOnRoad')}</p>
             <h1>{t('appTitle')}</h1>
-            <p className="status">
-              {(!workday || !workday.leftHomeAt) && t('workdayReady')}
-              {workday?.leftHomeAt && !workday.arrivedHomeAt && t('workdayInProgress')}
-              {workday?.arrivedHomeAt && t('workdayComplete')}
-            </p>
+            {!workday?.arrivedHomeAt && (
+              <p className="status">
+                {(!workday || !workday.leftHomeAt) && t('workdayReady')}
+                {workday?.leftHomeAt && t('workdayInProgress')}
+              </p>
+            )}
           </header>
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (
@@ -802,22 +829,6 @@ function App() {
             </p>
           </div>
 
-          <section className="import-panel" aria-labelledby="import-title">
-            <div>
-              <h3 id="import-title">{t('importCsv')}</h3>
-              <p>{t('importCsvDescription')}</p>
-            </div>
-            <label className="secondary import-button">
-              {t('chooseCsvFile')}
-              <input type="file" accept=".csv,text/csv" onChange={importCsv} />
-            </label>
-            {importStatus && (
-              <p className={`import-status ${importStatus.type}`} role={importStatus.type === 'error' ? 'alert' : 'status'}>
-                {t(importStatus.key, importStatus.replacements)}
-              </p>
-            )}
-          </section>
-
           {history.length > 0 && (
             <>
               <button className="secondary export-button" type="button" onClick={exportCsv}>{t('exportCsv')}</button>
@@ -958,6 +969,23 @@ function App() {
               )}
             </section>
           )}
+
+          <section className="import-panel data-transfer-panel" aria-labelledby="data-transfer-title">
+            <div>
+              <p className="panel-eyebrow">{t('dataTransfer')}</p>
+              <h3 id="data-transfer-title">{t('importCsv')}</h3>
+              <p>{t('importCsvDescription')}</p>
+            </div>
+            <label className="secondary import-button">
+              {t('chooseCsvFile')}
+              <input type="file" accept=".csv,text/csv" onChange={importCsv} />
+            </label>
+            {importStatus && (
+              <p className={`import-status ${importStatus.type}`} role={importStatus.type === 'error' ? 'alert' : 'status'}>
+                {t(importStatus.key, importStatus.replacements)}
+              </p>
+            )}
+          </section>
         </section>
       )}
 
@@ -968,7 +996,7 @@ function App() {
           onClick={() => setActiveView('today')}
           aria-current={activeView === 'today' ? 'page' : undefined}
         >
-          <span aria-hidden="true">⌂</span>
+          <NavigationIcon name="today" />
           {t('today')}
         </button>
         <button
@@ -977,7 +1005,7 @@ function App() {
           onClick={() => setActiveView('history')}
           aria-current={activeView === 'history' ? 'page' : undefined}
         >
-          <span aria-hidden="true">◷</span>
+          <NavigationIcon name="history" />
           {t('history')}
         </button>
         <button
@@ -986,7 +1014,7 @@ function App() {
           onClick={() => setActiveView('options')}
           aria-current={activeView === 'options' ? 'page' : undefined}
         >
-          <span aria-hidden="true">⚙</span>
+          <NavigationIcon name="options" />
           {t('options')}
         </button>
       </nav>

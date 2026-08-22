@@ -8,7 +8,7 @@ The interface is mobile-first and presents three primary views:
 
 - **Today** for preparing a day, recording the route and timestamps, editing the workday note, and completing the final journey.
 - **History** for reviewing completed days, editing notes and kilometres, deleting days, and exporting CSV.
-- **Options** for selecting the persistent English or Spanish (Spain) interface language.
+- **Options** for selecting the persistent English or Spanish (Spain) interface language, installing the PWA, and importing history from an older installation.
 
 ## Application state
 

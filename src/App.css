@@ -293,6 +293,15 @@ h2 { margin: 0; font-size: 1.08rem; }
 .import-panel p { margin: 0; }
 .import-panel h3 { font-size: 1rem; }
 .import-panel > div p { margin-top: 5px; color: #667085; font-size: 0.82rem; line-height: 1.45; }
+.import-panel > div .panel-eyebrow {
+  margin: 0 0 4px;
+  color: #4338ca;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.data-transfer-panel { margin: 16px 0 0; }
 .import-button {
   display: inline-flex;
   width: fit-content;
@@ -450,7 +459,15 @@ h2 { margin: 0; font-size: 1.08rem; }
   background: transparent;
   font-size: 0.75rem;
 }
-.bottom-nav button span { font-size: 1.35rem; line-height: 1; }
+.navigation-icon {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
 .bottom-nav button.active { color: #312e81; background: #eef0ff; }
 
 @keyframes view-in {
