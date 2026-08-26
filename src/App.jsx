@@ -2,7 +2,14 @@ import { useEffect, useLayoutEffect, useState } from 'react'
 import packageJson from '../package.json'
 import { importWorkdaysFromCsv } from './csvImport'
 import { LANGUAGE_KEY, languageOptions, locales, translate } from './i18n'
-import { hasMissingKilometres } from './workday'
+import {
+  canReopenWorkday,
+  hasMissingKilometres,
+  latestCompletedWorkday,
+  latestUndoableTimestamp,
+  reopenWorkday,
+  undoLatestTimestamp,
+} from './workday'
 import './App.css'
 
 const STORAGE_KEY = 'workday-tracker-current'
@@ -227,9 +234,13 @@ function App() {
     return () => window.clearInterval(timer)
   }, [workday?.leftHomeAt, workday?.arrivedHomeAt])
 
-  const lastVisit = workday?.visits.at(-1)
-  const canAddCustomer = workday?.leftHomeAt && !workday.arrivedHomeAt && (!lastVisit || lastVisit.leftAt)
+  const canAddCustomer = workday?.leftHomeAt
+    && !workday.arrivedHomeAt
+    && workday.visits.every((visit) => visit.arrivedAt && visit.leftAt)
   const canArriveHome = canAddCustomer
+  const currentActionVisit = workday?.visits.find((visit) => !visit.arrivedAt || !visit.leftAt)
+  const undoableTimestamp = latestUndoableTimestamp(workday)
+  const latestCompleted = latestCompletedWorkday(history)
   const completedVisits = workday?.visits.filter((visit) => visit.leftAt).length ?? 0
   const isLongWorkday = workday?.leftHomeAt
     && !workday.arrivedHomeAt
@@ -282,6 +293,22 @@ function App() {
     }))
   }
 
+  function undoTimestamp() {
+    if (!undoableTimestamp) return
+    const confirmationKey = undoableTimestamp.field === 'leftHomeAt'
+      ? 'undoLeftHomeConfirmation'
+      : undoableTimestamp.field === 'arrivedAt'
+        ? 'undoCustomerArrivalConfirmation'
+        : 'undoCustomerDepartureConfirmation'
+    const customer = workday.visits.find((visit) => visit.id === undoableTimestamp.visitId)
+    const confirmed = window.confirm(t(confirmationKey, {
+      customer: customer?.name ?? '',
+      date: formatTime(undoableTimestamp.timestamp, locale),
+    }))
+    if (!confirmed) return
+    setWorkday((current) => undoLatestTimestamp(current))
+  }
+
   function updateVisitKilometres(id, value) {
     const nextValue = value === '' ? null : Number(value)
     if (workday.arrivedHomeAt) {
@@ -329,6 +356,22 @@ function App() {
     setHistory((current) => [completed, ...current.filter((day) => day.id !== completed.id)])
     setIsFinishSheetOpen(false)
     setIsNoteSheetOpen(false)
+  }
+
+  function reopenCompletedWorkday(day) {
+    if (!canReopenWorkday(day, workday, history)) return
+    const confirmed = window.confirm(t('reopenConfirmation', {
+      date: formatTime(day.arrivedHomeAt, locale),
+    }))
+    if (!confirmed) return
+
+    setWorkday(reopenWorkday(day))
+    setHistory((current) => current.filter((candidate) => candidate.id !== day.id))
+    setIsCustomerSheetOpen(false)
+    setIsFinishSheetOpen(false)
+    setIsNoteSheetOpen(false)
+    setNow(Date.now())
+    setActiveView('today')
   }
 
   function updateHistoryVisitKilometres(dayId, visitId, value) {
@@ -553,12 +596,17 @@ function App() {
                   <div>
                     <strong>{t('home')}</strong>
                     <time dateTime={workday.leftHomeAt}>{t('left')} {formatClock(workday.leftHomeAt, locale)}</time>
+                    {undoableTimestamp?.field === 'leftHomeAt' && (
+                      <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
+                        {t('undoTimestamp')}
+                      </button>
+                    )}
                   </div>
                 </div>
 
           {workday.visits.map((visit, index) => (
             <article
-              className={`visit-card route-stop ${visit.leftAt ? 'complete compact' : 'current'}`}
+              className={`visit-card route-stop ${visit.leftAt ? 'complete' : 'current'} ${visit.leftAt && undoableTimestamp?.visitId !== visit.id ? 'compact' : ''}`}
               key={visit.id}
             >
               <div className="visit-heading">
@@ -591,10 +639,20 @@ function App() {
                 <p>
                   <span>{t('arrived')}</span>
                   <strong>{visit.arrivedAt ? formatTime(visit.arrivedAt, locale) : t('notYet')}</strong>
+                  {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'arrivedAt' && (
+                    <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
+                      {t('undoTimestamp')}
+                    </button>
+                  )}
                 </p>
                 <p>
                   <span>{t('left')}</span>
                   <strong>{visit.leftAt ? formatTime(visit.leftAt, locale) : t('notYet')}</strong>
+                  {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'leftAt' && (
+                    <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
+                      {t('undoTimestamp')}
+                    </button>
+                  )}
                 </p>
               </div>
 
@@ -612,14 +670,14 @@ function App() {
               </section>
 
               <div className="action-dock" aria-label={t('currentAction')}>
-                {lastVisit && !lastVisit.arrivedAt && (
-                  <button className="primary" onClick={() => recordVisitTime(lastVisit.id, 'arrivedAt')}>
-                    {t('arrivedAt', { name: lastVisit.name })}
+                {currentActionVisit && !currentActionVisit.arrivedAt && (
+                  <button className="primary" onClick={() => recordVisitTime(currentActionVisit.id, 'arrivedAt')}>
+                    {t('arrivedAt', { name: currentActionVisit.name })}
                   </button>
                 )}
-                {lastVisit?.arrivedAt && !lastVisit.leftAt && (
-                  <button className="primary" onClick={() => recordVisitTime(lastVisit.id, 'leftAt')}>
-                    {t('leaveCustomer', { name: lastVisit.name })}
+                {currentActionVisit?.arrivedAt && !currentActionVisit.leftAt && (
+                  <button className="primary" onClick={() => recordVisitTime(currentActionVisit.id, 'leftAt')}>
+                    {t('leaveCustomer', { name: currentActionVisit.name })}
                   </button>
                 )}
                 {canAddCustomer && (
@@ -641,7 +699,14 @@ function App() {
           )}
 
           {workday?.arrivedHomeAt && (
-            <button className="primary" onClick={startNewDay}>{t('startNewDay')}</button>
+            <div className="completed-day-actions">
+              {canReopenWorkday(workday, workday, history) && (
+                <button className="reopen-workday-button" type="button" onClick={() => reopenCompletedWorkday(workday)}>
+                  {t('reopenWorkday')}
+                </button>
+              )}
+              <button className="primary" onClick={startNewDay}>{t('startNewDay')}</button>
+            </div>
           )}
 
           {isCustomerSheetOpen && canAddCustomer && (
@@ -905,6 +970,15 @@ function App() {
                         onChange={(event) => updateHistoryHomeKilometres(day.id, event.target.value)}
                       />
                     </label>
+                    {latestCompleted?.id === day.id && canReopenWorkday(day, workday, history) && (
+                      <button
+                        className="reopen-workday-button"
+                        type="button"
+                        onClick={() => reopenCompletedWorkday(day)}
+                      >
+                        {t('reopenWorkday')}
+                      </button>
+                    )}
                     <button
                       className="delete-day-button"
                       type="button"
