@@ -104,6 +104,17 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .timeline-row { display: flex; align-items: center; gap: 12px; padding: 4px 6px; }
 .timeline-row div { display: grid; }
 .timeline-row time { color: #667085; font-size: 0.86rem; }
+.undo-timestamp-button {
+  width: fit-content;
+  min-height: 34px;
+  margin-top: 6px;
+  padding: 5px 10px;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.76rem;
+}
 .dot { width: 13px; height: 13px; flex: 0 0 auto; border: 4px solid #a5f3fc; border-radius: 50%; background: #4338ca; }
 .route-stop { position: relative; margin-left: 7px; }
 .route-stop::before {
@@ -135,6 +146,7 @@ h2 { margin: 0; font-size: 1.08rem; }
 .timestamps p { display: grid; gap: 2px; margin: 0; padding: 10px; border-radius: 11px; background: #f4f5fb; font-size: 0.78rem; }
 .timestamps span { color: #667085; }
 .timestamps strong { font-size: 0.8rem; }
+.timestamps .undo-timestamp-button { justify-self: start; }
 
 .add-customer { display: grid; gap: 16px; }
 .add-customer label, .kilometres-field { display: grid; gap: 6px; color: #344054; font-size: 0.86rem; font-weight: 650; }
@@ -243,6 +255,12 @@ h2 { margin: 0; font-size: 1.08rem; }
 }
 .finish-sheet .kilometres-field { margin-bottom: 18px; }
 .finish-confirm { min-height: 56px; }
+.completed-day-actions { display: grid; gap: 10px; }
+.reopen-workday-button {
+  color: #312e81;
+  border: 1px solid #a5b4fc;
+  background: #fff;
+}
 .note-sheet textarea,
 .history-note-field textarea {
   width: 100%;
