@@ -31,7 +31,7 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 ## Edit customer
 
-- [ ] Confirm customer names and recorded timestamps are displayed but are not editable.
+- [ ] Confirm customer names are displayed but are not editable.
 - [ ] Confirm the supported customer edit—the kilometres from the previous stop—can be changed during an active day.
 
 ## Customer timestamps
@@ -39,6 +39,13 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Select “Arrived at [customer]” and confirm an arrival timestamp appears.
 - [ ] Confirm “Leave [customer]” becomes available only after arrival.
 - [ ] Select “Leave [customer]” and confirm a departure timestamp appears.
+- [ ] Confirm only the latest recorded timestamp has an “Undo” action and that it does not use destructive-delete styling.
+- [ ] Select “Undo,” cancel the warning, and confirm the timestamp remains unchanged.
+- [ ] Confirm the Undo warning identifies “Arrived” or “Left,” includes the customer name and recorded date/time, says the time cannot be recovered, and says other workday data is preserved.
+- [ ] Undo a departure and confirm only that timestamp is cleared and the departure action becomes available again.
+- [ ] Undo the arrival next and confirm all customers, kilometres, notes, and earlier timestamps remain unchanged.
+- [ ] Add an untimestamped customer and confirm leaving-home cannot be undone while that customer exists.
+- [ ] Add a second customer, undo the preceding departure, and confirm the app returns to that departure before allowing the second customer arrival.
 - [ ] Refresh and confirm all recorded timestamps remain unchanged.
 - [ ] Keep or simulate an active workday lasting eight hours and confirm the long-workday warning appears without ending the workday.
 
@@ -70,6 +77,13 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Confirm the active-day details disappear and only “Start new day” remains for the current day.
 - [ ] Confirm the Today header does not show a “Workday complete” status after finishing.
 - [ ] Confirm the completed day is added to History immediately.
+- [ ] Select “Reopen workday,” cancel its confirmation, and confirm the completed day is unchanged.
+- [ ] Confirm the reopen message identifies “Arrived home” and its recorded date/time, says the time cannot be recovered, and says all other workday data is preserved.
+- [ ] Confirm reopening clears only arrival home, removes the day from History, and restores the active route.
+- [ ] Reload after completion, reopen from History, and confirm the same recovery behaviour.
+- [ ] Confirm only the latest locally completed day offers reopening; older and imported days do not.
+- [ ] Advance to the next local calendar day and confirm the previously completed workday can no longer be reopened.
+- [ ] Start a different active workday and confirm completed History entries cannot be reopened.
 
 ## History
 
