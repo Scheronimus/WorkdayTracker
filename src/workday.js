@@ -7,6 +7,24 @@ export function hasMissingKilometres(day) {
     || isMissingKilometres(day.kilometresHome)
 }
 
+function isRouteReady(day) {
+  return Boolean(day?.leftHomeAt)
+    && !day.arrivedHomeAt
+    && day.visits.every((visit) => visit.arrivedAt && visit.leftAt)
+}
+
+export function canBeginHomeJourney(day) {
+  return isRouteReady(day) && !day.homeJourneyStarted
+}
+
+export function canRecordHomeArrival(day) {
+  return isRouteReady(day) && Boolean(day.homeJourneyStarted)
+}
+
+export function beginHomeJourney(day) {
+  return canBeginHomeJourney(day) ? { ...day, homeJourneyStarted: true } : day
+}
+
 export function latestUndoableTimestamp(day) {
   if (!day?.leftHomeAt || day.arrivedHomeAt) return null
 

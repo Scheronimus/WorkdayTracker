@@ -21,7 +21,7 @@ The interface is mobile-first and presents three primary views:
 - `kilometres`: the new-customer kilometre form value.
 - View, clock, and bottom-sheet state used by the mobile interface.
 
-Only one workday is current. Customer visits proceed sequentially: a new customer can be added only when every existing visit has both timestamps. The latest recorded normal timestamp can be undone after confirmation without cascading changes; the warning identifies the unrecoverable timestamp, and the action sequence then returns to that incomplete step. Arriving home completes the current workday, adds it to history, and hides its active-day detail. Starting a new day replaces the current workday with an empty one without clearing history.
+Only one workday is current. Customer visits proceed sequentially: a new customer can be added only when every existing visit has both timestamps. The latest recorded normal timestamp can be undone after confirmation without cascading changes; the warning identifies the unrecoverable timestamp, and the action sequence then returns to that incomplete step. After the last customer, the user records the expected kilometres and starts the home journey without creating an arrival timestamp. At home, the user can review those kilometres before the arrival timestamp completes the workday, adds it to history, and hides its active-day detail. Starting a new day replaces the current workday with an empty one without clearing history.
 
 The final arrival-home timestamp is not part of normal undo. The latest locally created completed workday can be reopened after confirmation only on the same local calendar day and when no different workday is active. Reopening clears only `arrivedHomeAt`, removes that workday from History, and makes it current again. Imported, previous-day, and older completed workdays cannot be reopened.
 
@@ -47,6 +47,7 @@ Workday:
   leftHomeAt: String | null, // ISO timestamp
   arrivedHomeAt: String | null,
   kilometresHome: Number | null,
+  homeJourneyStarted: Boolean, // missing values from older versions are treated as false
   note: String,
   visits: CustomerVisit[]
 }
