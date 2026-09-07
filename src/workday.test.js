@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  beginHomeJourney,
+  canBeginHomeJourney,
+  canRecordHomeArrival,
   canReopenWorkday,
   hasMissingKilometres,
   latestCompletedWorkday,
@@ -8,6 +11,36 @@ import {
   reopenWorkday,
   undoLatestTimestamp,
 } from './workday.js'
+
+test('keeps the home journey separate from the arrival timestamp', () => {
+  const readyDay = {
+    leftHomeAt: '2026-08-26T06:00:00.000Z',
+    arrivedHomeAt: null,
+    kilometresHome: 8,
+    visits: [{ arrivedAt: '2026-08-26T07:00:00.000Z', leftAt: '2026-08-26T08:00:00.000Z' }],
+  }
+
+  assert.equal(canBeginHomeJourney(readyDay), true)
+  assert.equal(canRecordHomeArrival(readyDay), false)
+
+  const travellingDay = beginHomeJourney(readyDay)
+  assert.equal(travellingDay.homeJourneyStarted, true)
+  assert.equal(travellingDay.arrivedHomeAt, null)
+  assert.equal(travellingDay.kilometresHome, 8)
+  assert.equal(canBeginHomeJourney(travellingDay), false)
+  assert.equal(canRecordHomeArrival(travellingDay), true)
+})
+
+test('does not begin the home journey while a customer visit is incomplete', () => {
+  const incompleteDay = {
+    leftHomeAt: '2026-08-26T06:00:00.000Z',
+    arrivedHomeAt: null,
+    visits: [{ arrivedAt: '2026-08-26T07:00:00.000Z', leftAt: null }],
+  }
+
+  assert.equal(canBeginHomeJourney(incompleteDay), false)
+  assert.equal(beginHomeJourney(incompleteDay), incompleteDay)
+})
 
 test('detects missing customer and final-journey kilometres', () => {
   assert.equal(hasMissingKilometres({

@@ -3,6 +3,9 @@ import packageJson from '../package.json'
 import { importWorkdaysFromCsv } from './csvImport'
 import { LANGUAGE_KEY, languageOptions, locales, translate } from './i18n'
 import {
+  beginHomeJourney,
+  canBeginHomeJourney,
+  canRecordHomeArrival,
   canReopenWorkday,
   hasMissingKilometres,
   latestCompletedWorkday,
@@ -123,6 +126,7 @@ function emptyWorkday() {
     leftHomeAt: null,
     arrivedHomeAt: null,
     kilometresHome: null,
+    homeJourneyStarted: false,
     note: '',
     visits: [],
   }
@@ -234,10 +238,10 @@ function App() {
     return () => window.clearInterval(timer)
   }, [workday?.leftHomeAt, workday?.arrivedHomeAt])
 
-  const canAddCustomer = workday?.leftHomeAt
-    && !workday.arrivedHomeAt
-    && workday.visits.every((visit) => visit.arrivedAt && visit.leftAt)
-  const canArriveHome = canAddCustomer
+  const isTravellingHome = Boolean(workday?.homeJourneyStarted)
+  const canStartHomeJourney = canBeginHomeJourney(workday)
+  const canAddCustomer = canStartHomeJourney
+  const canArriveHome = canRecordHomeArrival(workday)
   const currentActionVisit = workday?.visits.find((visit) => !visit.arrivedAt || !visit.leftAt)
   const undoableTimestamp = latestUndoableTimestamp(workday)
   const latestCompleted = latestCompletedWorkday(history)
@@ -356,6 +360,12 @@ function App() {
     setHistory((current) => [completed, ...current.filter((day) => day.id !== completed.id)])
     setIsFinishSheetOpen(false)
     setIsNoteSheetOpen(false)
+  }
+
+  function startHomeJourney() {
+    if (!canStartHomeJourney) return
+    setWorkday((current) => beginHomeJourney(current))
+    setIsFinishSheetOpen(false)
   }
 
   function reopenCompletedWorkday(day) {
@@ -659,11 +669,14 @@ function App() {
             </article>
           ))}
 
-          <div className="timeline-row route-stop next-home">
+          <div className={`timeline-row route-stop next-home${isTravellingHome ? ' current' : ''}`}>
             <span className="dot" />
             <div>
               <strong>{t('home')}</strong>
-              <span>{t('endOfRoute')}</span>
+              <span>{t(isTravellingHome ? 'travellingHome' : 'endOfRoute')}</span>
+              {isTravellingHome && workday.kilometresHome !== null && (
+                <span>{workday.kilometresHome} km</span>
+              )}
             </div>
           </div>
 
@@ -688,11 +701,15 @@ function App() {
                     <button
                       className="finish-workday-button"
                       onClick={() => setIsFinishSheetOpen(true)}
-                      disabled={!canArriveHome}
                     >
-                      {t('finishAtHome')}
+                      {t('driveHome')}
                     </button>
                   </>
+                )}
+                {canArriveHome && (
+                  <button className="primary" onClick={() => setIsFinishSheetOpen(true)}>
+                    {t('arrivedHomeNow')}
+                  </button>
                 )}
               </div>
             </>
@@ -828,7 +845,7 @@ function App() {
             </div>
           )}
 
-          {isFinishSheetOpen && canArriveHome && (
+          {isFinishSheetOpen && (canStartHomeJourney || canArriveHome) && (
             <div
               className="sheet-backdrop"
               role="presentation"
@@ -845,8 +862,8 @@ function App() {
                 <div className="sheet-handle" aria-hidden="true" />
                 <div className="sheet-heading">
                   <div>
-                    <p className="eyebrow">{t('finalStep')}</p>
-                    <h2 id="finish-sheet-title">{t('finishWorkday')}</h2>
+                    <p className="eyebrow">{t(isTravellingHome ? 'finalStep' : 'finalJourney')}</p>
+                    <h2 id="finish-sheet-title">{t(isTravellingHome ? 'reviewHomeJourney' : 'driveHome')}</h2>
                   </div>
                   <button
                     className="close-sheet"
@@ -859,7 +876,7 @@ function App() {
                 </div>
 
                 <p className="sheet-description">
-                  {t('finishDescription')}
+                  {t(isTravellingHome ? 'arrivalReviewDescription' : 'homeJourneyDescription')}
                 </p>
                 <label className="kilometres-field">
                   {homeKilometresLegLabel(workday.visits, t)}
@@ -874,8 +891,12 @@ function App() {
                     onChange={(event) => updateHomeKilometres(event.target.value)}
                   />
                 </label>
-                <button className="primary finish-confirm" type="button" onClick={arriveHome}>
-                  {t('confirmFinish')}
+                <button
+                  className="primary finish-confirm"
+                  type="button"
+                  onClick={isTravellingHome ? arriveHome : startHomeJourney}
+                >
+                  {t(isTravellingHome ? 'confirmArrivalHome' : 'startDriveHome')}
                 </button>
               </section>
             </div>

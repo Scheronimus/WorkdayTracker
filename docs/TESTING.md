@@ -52,7 +52,7 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 ## Edit kilometres
 
 - [ ] Enter, change, and clear kilometres on an active customer visit.
-- [ ] In the finish-workday sheet, enter, change, and clear kilometres from the final customer to home.
+- [ ] Before driving home, enter, change, and clear kilometres from the final customer to home.
 - [ ] Confirm empty kilometre values remain valid and do not block any action.
 - [ ] In expanded History, edit and clear both types of kilometre value and confirm totals update.
 - [ ] Refresh and confirm History kilometre edits persist.
@@ -68,12 +68,13 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 ## Finish workday
 
-- [ ] Confirm “Finish workday at home” is unavailable while a customer is present but has not been left.
+- [ ] Confirm “Drive home” is unavailable while a customer is present but has not been left.
 - [ ] Confirm each kilometre field names its journey leg, such as “Kilometres from home to Customer 1” and “Kilometres from Customer 1 to Customer 2.”
-- [ ] Confirm the final-journey kilometre field is not displayed in the active route.
-- [ ] Select “Finish workday at home” and confirm the finish sheet opens with a field labelled “Kilometres from [final customer] to home.”
-- [ ] Close the finish sheet and confirm the active workday remains unchanged.
-- [ ] Open the finish sheet again, enter a kilometre value, and select “Confirm and finish workday.”
+- [ ] Confirm the final-journey kilometre field is not displayed in the active route before choosing “Drive home.”
+- [ ] Select “Drive home” and confirm the sheet opens with a field labelled “Kilometres from [final customer] to home.”
+- [ ] Enter a kilometre value, select “Start driving home,” and confirm no arrival timestamp is recorded yet.
+- [ ] Refresh and confirm the home journey and kilometre value remain active.
+- [ ] Select “Arrived home,” review or change the kilometre value, and confirm the arrival.
 - [ ] Confirm the active-day details disappear and only “Start new day” remains for the current day.
 - [ ] Confirm the Today header does not show a “Workday complete” status after finishing.
 - [ ] Confirm the completed day is added to History immediately.
