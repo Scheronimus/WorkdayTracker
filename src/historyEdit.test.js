@@ -111,7 +111,7 @@ test('focused arrival-home correction follows review then confirmation and prese
   assert.deepEqual(review.changes, [{ path: 'arrivedHomeAt', before: day.arrivedHomeAt, after: corrected }])
   const saved = commitTimestampEdit(day, draft, 'arrivedHomeAt', true)
   assert.equal(saved.saved, true)
-  assert.deepEqual(saved.day, { ...day, arrivedHomeAt: corrected })
+  assert.deepEqual(saved.day, { ...day, arrivedHomeAt: corrected, timestampCorrections: { arrivedHomeAt: { original: day.arrivedHomeAt } } })
   assert.equal(day.arrivedHomeAt, original.arrivedHomeAt)
 })
 
@@ -135,6 +135,7 @@ test('all four focused timestamp types require confirmation and update only the 
     assert.equal(commitTimestampEdit(original, draft, path).saved, false)
     const result = commitTimestampEdit(original, draft, path, true)
     assert.equal(result.saved, true)
+    expected.timestampCorrections = { [path]: { original: result.changes[0].before } }
     assert.deepEqual(result.day, expected)
   }
 })
@@ -161,4 +162,53 @@ test('focused edits reject non-timestamp paths', () => {
   for (const path of ['note', 'visits.0.name', 'visits.-1.leftAt', 'visits.9.leftAt']) {
     assert.throws(() => commitTimestampEdit(original, draft, path, true), /Invalid timestamp field/)
   }
+})
+
+test('repeated corrections preserve the first recorded instant, including milliseconds, across reloads', () => {
+  const draft = createHistoryDraft(original)
+  draft.arrivedHomeAt = localDateTime('2026-10-25T17:15:00.000Z')
+  const first = commitTimestampEdit(original, draft, 'arrivedHomeAt', true).day
+  const reloaded = JSON.parse(JSON.stringify(first))
+  const next = createHistoryDraft(reloaded)
+  next.arrivedHomeAt = localDateTime('2026-10-25T17:30:00.000Z')
+  const second = commitHistoryEdit(reloaded, next, true).day
+  assert.equal(second.timestampCorrections.arrivedHomeAt.original, original.arrivedHomeAt)
+  assert.equal(first.arrivedHomeAt, '2026-10-25T17:15:00.000Z')
+  assert.equal(second.arrivedHomeAt, '2026-10-25T17:30:00.000Z')
+  assert.equal(original.timestampCorrections, undefined)
+})
+
+test('unconfirmed, invalid and unchanged drafts do not create correction markers', () => {
+  const draft = createHistoryDraft(original)
+  assert.equal(commitHistoryEdit(original, draft).day.timestampCorrections, undefined)
+  draft.arrivedHomeAt = localDateTime('2026-10-25T17:15:00.000Z')
+  assert.equal(commitHistoryEdit(original, draft).day.timestampCorrections, undefined)
+  draft.arrivedHomeAt = ''
+  assert.equal(commitHistoryEdit(original, draft, true).day.timestampCorrections, undefined)
+})
+
+test('cleared and newly filled customer timestamps retain their original values', () => {
+  const draft = createHistoryDraft(original)
+  draft.visits[0].arrivedAt = ''
+  const cleared = commitTimestampEdit(original, draft, 'visits.0.arrivedAt', true).day
+  assert.equal(cleared.timestampCorrections['visits.0.arrivedAt'].original, original.visits[0].arrivedAt)
+  const next = createHistoryDraft(cleared)
+  next.visits[0].arrivedAt = localDateTime(original.visits[0].arrivedAt)
+  const filled = commitTimestampEdit(cleared, next, 'visits.0.arrivedAt', true).day
+  assert.equal(filled.timestampCorrections['visits.0.arrivedAt'].original, original.visits[0].arrivedAt)
+  const missing = { ...original, visits: [{ ...original.visits[0], arrivedAt: null }] }
+  const missingDraft = createHistoryDraft(missing)
+  missingDraft.visits[0].arrivedAt = localDateTime(original.visits[0].arrivedAt)
+  assert.equal(commitHistoryEdit(missing, missingDraft, true).day.timestampCorrections['visits.0.arrivedAt'].original, null)
+})
+
+test('editing non-timestamp values retains existing correction records', () => {
+  const draft = createHistoryDraft(original)
+  draft.arrivedHomeAt = localDateTime('2026-10-25T17:15:00.000Z')
+  const edited = commitHistoryEdit(original, draft, true).day
+  const next = createHistoryDraft(edited)
+  next.note = 'Updated note'
+  const result = commitHistoryEdit(edited, next)
+  assert.equal(result.saved, true)
+  assert.deepEqual(result.day.timestampCorrections, edited.timestampCorrections)
 })

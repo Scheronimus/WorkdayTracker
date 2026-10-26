@@ -536,11 +536,15 @@ h2 { margin: 0; font-size: 1.08rem; }
 .editor-error { color: #b91c1c; font-size: .9rem; }
 .timestamp-review { padding-left: 20px; }
 .timestamp-review li { margin: 20px 0; overflow-wrap: anywhere; }
-.history-timestamp-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; }
-.history-timestamp-row > div { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.history-timestamp-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; margin: 12px 0; }
+.history-timestamp-row > div { display: grid; gap: 4px; min-width: 0; overflow-wrap: break-word; }
 .history-timestamp-row span { color: #667085; font-size: .85rem; }
-.timestamp-edit-button { flex-shrink: 0; min-height: 44px; padding: 10px 14px; color: #3730a3; background: #eef0ff; border-radius: 8px; }
+.manual-timestamp { margin-left: 3px; color: #4338ca; font-size: .85em; }
+.original-timestamp { color: #667085; font-size: .78rem; font-weight: 400; }
+.timestamp-edit-button { display: grid; place-items: center; width: 44px; min-height: 44px; padding: 12px; color: #667085; background: transparent; border-radius: 8px; }
+.timestamp-edit-button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.timestamp-edit-button:hover, .timestamp-edit-button:focus-visible { color: #4338ca; background: #eef0ff; }
 .history-save-feedback { position: fixed; z-index: 30; bottom: 100px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 12px; color: white; background: #166534; box-shadow: 0 4px 16px #0003; }
-.timestamp-editor { height: auto; }
+.timestamp-editor { height: fit-content; }
 @media (max-width: 600px) { .history-editor { width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; } }
-@media (max-width: 600px) { .timestamp-editor { width: calc(100% - 24px); height: auto; max-height: 90dvh; margin: auto; border-radius: 20px; } }
+@media (max-width: 600px) { .timestamp-editor { width: calc(100% - 24px); height: fit-content; max-height: 90dvh; margin: auto; border-radius: 20px; } }

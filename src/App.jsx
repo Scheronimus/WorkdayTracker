@@ -181,12 +181,24 @@ function App() {
   }
 
   function timestampRow(day, path, value, title) {
+    const correction = day.timestampCorrections?.[path]
     return <div className="history-timestamp-row">
-      <div><span>{title}</span><strong>{value ? formatTime(value, locale) : t('notRecorded')}</strong></div>
+      <div><span>{title}</span><strong>{value ? formatTime(value, locale) : t('notRecorded')}{timestampStar(day, path)}</strong>
+        {correction && <small className="original-timestamp">{t('originalTime')}: {correction.original ? formatTime(correction.original, locale) : t('notRecorded')}</small>}
+      </div>
       <button className="timestamp-edit-button" type="button"
         aria-label={t('editTimestamp', { event: title })}
-        onClick={() => openHistoryEditor(day, path)}>{t('editValue')}</button>
+        title={t('editTimestamp', { event: title })}
+        onClick={() => openHistoryEditor(day, path)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="m15 5 4 4M4 20l4.5-1 12-12a2.8 2.8 0 0 0-4-4l-12 12L4 20Z" />
+        </svg>
+      </button>
     </div>
+  }
+
+  function timestampStar(day, path) {
+    return day.timestampCorrections?.[path] ? <sup className="manual-timestamp" title={t('manuallyChanged')} aria-label={t('manuallyChanged')}>*</sup> : null
   }
 
   useLayoutEffect(() => {
@@ -452,6 +464,7 @@ function App() {
       t('csvArriveHome'),
       t('csvFinalJourney'),
       t('csvDayNote'),
+      t('csvTimestampCorrections'),
     ]
 
     const rows = history.flatMap((day) => {
@@ -467,6 +480,7 @@ function App() {
         day.arrivedHomeAt,
         day.kilometresHome ?? '',
         day.note ?? '',
+        day.timestampCorrections ? JSON.stringify(day.timestampCorrections) : '',
       ])
     })
 
@@ -612,7 +626,7 @@ function App() {
                   <span className="dot" />
                   <div>
                     <strong>{t('home')}</strong>
-                    <time dateTime={workday.leftHomeAt}>{t('left')} {formatClock(workday.leftHomeAt, locale)}</time>
+                    <time dateTime={workday.leftHomeAt}>{t('left')} {formatClock(workday.leftHomeAt, locale)}{timestampStar(workday, 'leftHomeAt')}</time>
                     {undoableTimestamp?.field === 'leftHomeAt' && (
                       <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
                         {t('undoTimestamp')}
@@ -632,7 +646,7 @@ function App() {
                   <h2>{visit.name}</h2>
                   {visit.leftAt && (
                     <p className="visit-summary">
-                      {formatClock(visit.arrivedAt, locale)}–{formatClock(visit.leftAt, locale)}
+                      {formatClock(visit.arrivedAt, locale)}{timestampStar(workday, `visits.${index}.arrivedAt`)}–{formatClock(visit.leftAt, locale)}{timestampStar(workday, `visits.${index}.leftAt`)}
                       {visit.kilometres !== null ? ` · ${visit.kilometres} km` : ''}
                     </p>
                   )}
@@ -655,7 +669,7 @@ function App() {
               <div className="timestamps visit-detail">
                 <p>
                   <span>{t('arrived')}</span>
-                  <strong>{visit.arrivedAt ? formatTime(visit.arrivedAt, locale) : t('notYet')}</strong>
+                  <strong>{visit.arrivedAt ? formatTime(visit.arrivedAt, locale) : t('notYet')}{timestampStar(workday, `visits.${index}.arrivedAt`)}</strong>
                   {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'arrivedAt' && (
                     <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
                       {t('undoTimestamp')}
@@ -664,7 +678,7 @@ function App() {
                 </p>
                 <p>
                   <span>{t('left')}</span>
-                  <strong>{visit.leftAt ? formatTime(visit.leftAt, locale) : t('notYet')}</strong>
+                  <strong>{visit.leftAt ? formatTime(visit.leftAt, locale) : t('notYet')}{timestampStar(workday, `visits.${index}.leftAt`)}</strong>
                   {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'leftAt' && (
                     <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
                       {t('undoTimestamp')}
@@ -937,7 +951,7 @@ function App() {
                   <summary>
                     <div>
                       <strong>{formatDate(day.leftHomeAt, locale)}</strong>
-                      <span>{formatClock(day.leftHomeAt, locale)}–{formatClock(day.arrivedHomeAt, locale)}</span>
+                      <span>{formatClock(day.leftHomeAt, locale)}{timestampStar(day, 'leftHomeAt')}–{formatClock(day.arrivedHomeAt, locale)}{timestampStar(day, 'arrivedHomeAt')}</span>
                       <span>{t(day.visits.length === 1 ? 'customerCount' : 'customerCountPlural', { count: day.visits.length })}</span>
                       {day.note?.trim() && <span>{t('noteAdded')}</span>}
                       {kilometresIncomplete && (
@@ -950,6 +964,7 @@ function App() {
                   <div className="history-details">
                     {timestampRow(day, 'leftHomeAt', day.leftHomeAt, t('leftHome'))}
                     {timestampRow(day, 'arrivedHomeAt', day.arrivedHomeAt, t('arrivedHome'))}
+                    {Object.keys(day.timestampCorrections ?? {}).length > 0 && <small className="original-timestamp">* {t('manuallyChanged')}</small>}
 
                     <p>{day.note || t('dayNotePlaceholder')}</p>
                     {day.visits.map((visit, index) => <article className="history-visit" key={visit.id}>

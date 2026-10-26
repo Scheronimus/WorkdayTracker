@@ -66,6 +66,13 @@ export function prepareHistoryEdit(original, draft) {
 export function commitHistoryEdit(original, draft, confirmed = false) {
   const result = prepareHistoryEdit(original, draft)
   if (Object.keys(result.errors).length || (result.changes.length && !confirmed)) return { ...result, saved: false }
+  if (result.changes.length) {
+    const corrections = { ...original.timestampCorrections }
+    for (const change of result.changes) {
+      if (!Object.hasOwn(corrections, change.path)) corrections[change.path] = { original: change.before ?? null }
+    }
+    result.day.timestampCorrections = corrections
+  }
   return { ...result, saved: true }
 }
 
@@ -84,5 +91,6 @@ export function commitTimestampEdit(original, draft, path, confirmed = false) {
   const day = { ...original, visits: original.visits.map((visit) => ({ ...visit })) }
   if (isVisit) day.visits[visitIndex][parts[2]] = result.day.visits[visitIndex][parts[2]]
   else day[path] = result.day[path]
+  if (result.saved && result.changes.length) day.timestampCorrections = result.day.timestampCorrections
   return { ...result, day }
 }

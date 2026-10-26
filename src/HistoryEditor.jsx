@@ -55,7 +55,7 @@ export default function HistoryEditor({ day, target, t, locale, onSave, onClose 
   const targetIndex = targetParts?.length === 3 ? Number(targetParts[1]) : undefined
   const targetKey = targetParts?.at(-1)
   const targetValue = target ? (targetIndex == null ? draft[targetKey] : draft.visits[targetIndex][targetKey]) : ''
-  const originalValue = target ? (targetIndex == null ? day[targetKey] : day.visits[targetIndex][targetKey]) : null
+  const currentValue = target ? (targetIndex == null ? day[targetKey] : day.visits[targetIndex][targetKey]) : null
   function updatePart(part, value) {
     const [date = '', time = ''] = (targetValue || '').split('T')
     update(targetKey, part === 'date' ? `${value}T${time || '00:00:00'}` : `${date || createHistoryDraft(day).leftHomeAt.split('T')[0]}T${value}`, targetIndex)
@@ -70,7 +70,8 @@ export default function HistoryEditor({ day, target, t, locale, onSave, onClose 
     </> : <form noValidate onSubmit={(event) => { event.preventDefault(); save() }}>
       <p>{t('editWorkdayHint')}</p>
       {target ? <>
-        <p>{t('recordedValue')}: <strong>{display(originalValue)}</strong></p>
+        <p>{t('recordedValue')}: <strong>{display(currentValue)}</strong></p>
+        {day.timestampCorrections?.[target] && <p className="original-timestamp">{t('originalTime')}: {display(day.timestampCorrections[target].original)}</p>}
         <label className="history-editor-field">{t('correctionTime')}<input data-primary-focus type="time" step="1" value={targetValue?.split('T')[1] || ''} onChange={(event) => updatePart('time', event.target.value)} aria-invalid={Boolean(errors[target])} /></label>
         <label className="history-editor-field">{t('correctionDate')}<input type="date" value={targetValue?.split('T')[0] || ''} onChange={(event) => updatePart('date', event.target.value)} /></label>
         {targetIndex != null && <button type="button" onClick={() => update(targetKey, '', targetIndex)}>{t('clearTimestamp')}</button>}

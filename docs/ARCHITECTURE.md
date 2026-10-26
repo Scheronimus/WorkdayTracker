@@ -75,6 +75,10 @@ Completing a workday prepends it to history and removes an existing history obje
 
 History also offers a direct Edit button beside every timestamp. The shared editor accepts a target path to show only that timestamp's time and date. `commitTimestampEdit` isolates the selected change, validates journey order, and preserves all unrelated data exactly. A before/after review requires explicit confirmation, and successful saves show a temporary status message. The full workday editor remains available for correcting several values together.
 
+On the first confirmed manual correction, the workday gains `timestampCorrections`, keyed by timestamp path (for example `arrivedHomeAt` or `visits.0.leftAt`). Each entry stores `{ original: ISOString | null }`. Further edits preserve that first value exactly. The entry also marks the timestamp as manually changed, including when it is cleared or restored to its original time. Cancelled and invalid drafts create no entries. History displays a star with an accessible explanation and the original value; existing records without metadata remain compatible. Earlier overwritten timestamps cannot be reconstructed.
+
+CSV export includes an eleventh column with the correction metadata as JSON. Import validates its timestamp paths and original values, and continues accepting legacy nine- and ten-column exports.
+
 CSV export runs entirely in the browser. It produces one row per customer visit and one row with empty customer fields for a workday without visits. Workday-level fields, including the day note, repeat on every row. Values containing commas, quotes, or line breaks are quoted, and embedded quotes are doubled. Headers and filenames follow the selected language. Timestamp columns now contain full ISO instants so corrected multi-day workdays and milliseconds survive export/import; the importer also accepts legacy time-only values. Older app versions cannot import the new timestamp representation. A `Blob` and temporary object URL trigger the download.
 
 ## PWA support

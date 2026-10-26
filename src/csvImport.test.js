@@ -36,3 +36,21 @@ test('rejects unrelated and malformed files', () => {
   assert.throws(() => importWorkdaysFromCsv('Name,Value\nA,1'), /unsupportedCsv/)
   assert.throws(() => importWorkdaysFromCsv(`${headers}\n123,invalid,08:00:00,A,08:30:00,09:00:00,1,10:00:00,2`), /invalidTimestamp/)
 })
+
+test('imports preserved original timestamps and manual correction markers', () => {
+  const corrections = {
+    arrivedHomeAt: { original: '2026-07-28T15:00:00.123Z' },
+    'visits.0.arrivedAt': { original: null },
+  }
+  const column = '"' + JSON.stringify(corrections).replaceAll('"', '""') + '"'
+  const [day] = importWorkdaysFromCsv(`${headers},Day Note,Original Timestamps\n42,2026-07-28,08:00:00,A,08:30:00,09:00:00,1,10:00:00,2,Note,${column}`)
+  assert.deepEqual(day.timestampCorrections, corrections)
+  assert.equal(day.note, 'Note')
+})
+
+test('rejects malformed correction metadata rather than silently losing original times', () => {
+  for (const value of ['not json', 'null', '[]', '{"arrivedHomeAt":{"original":"invalid"}}', '{"visits.8.leftAt":{"original":null}}']) {
+    const column = '"' + value.replaceAll('"', '""') + '"'
+    assert.throws(() => importWorkdaysFromCsv(`${headers},Day Note,Original Timestamps\n42,2026-07-28,08:00:00,A,08:30:00,09:00:00,1,10:00:00,2,,${column}`), /invalidTimestamp/)
+  }
+})

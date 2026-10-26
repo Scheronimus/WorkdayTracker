@@ -1,4 +1,20 @@
-const EXPECTED_COLUMN_COUNTS = new Set([9, 10])
+const EXPECTED_COLUMN_COUNTS = new Set([9, 10, 11])
+
+function parseTimestampCorrections(value, visitCount) {
+  if (!value.trim()) return undefined
+  let corrections
+  try { corrections = JSON.parse(value) } catch { throw new Error('invalidTimestamp') }
+  if (!corrections || typeof corrections !== 'object' || Array.isArray(corrections)) throw new Error('invalidTimestamp')
+  for (const [path, entry] of Object.entries(corrections)) {
+    const visit = /^visits\.(\d+)\.(arrivedAt|leftAt)$/.exec(path)
+    if (!['leftHomeAt', 'arrivedHomeAt'].includes(path) && !(visit && Number(visit[1]) < visitCount)) throw new Error('invalidTimestamp')
+    if (!entry || !Object.hasOwn(entry, 'original')) throw new Error('invalidTimestamp')
+    if (entry.original !== null && (typeof entry.original !== 'string'
+      || !Number.isFinite(new Date(entry.original).getTime())
+      || new Date(entry.original).toISOString() !== entry.original)) throw new Error('invalidTimestamp')
+  }
+  return corrections
+}
 
 function parseCsvRows(text) {
   const rows = []
@@ -123,14 +139,16 @@ export function importWorkdaysFromCsv(text) {
       })
 
     const arrivedHomeAt = parseLocalTimestamp(date, first[7], true, chronologicalCursor)
+    const timestampCorrections = headers.length === 11 ? parseTimestampCorrections(first[10], visits.length) : undefined
 
     return {
       id: sourceId,
       leftHomeAt,
       arrivedHomeAt,
       kilometresHome: parseKilometres(first[8]),
-      note: headers.length === 10 ? first[9] : '',
+      note: headers.length >= 10 ? first[9] : '',
       visits,
+      ...(timestampCorrections ? { timestampCorrections } : {}),
     }
   })
 }

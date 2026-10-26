@@ -168,6 +168,8 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 
 ## Quick timestamp correction
 
+Run `npm run test:ui` with Edge or Chromium installed (or set `BROWSER_PATH`). It uses a temporary browser profile and synthetic data, verifies history row widths at 320, 390, 485 and 1280 pixels, exercises timestamp review and saving, and writes screenshots to `artifacts/history-ui/`. It requires permission to launch browser rendering processes. Screenshots are excluded from Git.
+
 - [ ] Finish a day late, open History, and select Edit beside Arrived home. Confirm the dialog shows the workday date, recorded timestamp, time field first, and a separate date field.
 - [ ] Set the correct time and select Review change. Confirm stored data is unchanged until Confirm and save, and that Recorded and Corrected values identify the full dates and times.
 - [ ] Return to editing from review; verify the correction remains. Cancel and discard; verify the original time remains.
@@ -176,3 +178,7 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Enter an arrival home before the last customer departure. Verify the conflict blocks confirmation and explains how to use Edit workday for several corrections.
 - [ ] Correct an overnight date, fill an unrecorded customer timestamp, and clear an optional customer timestamp; verify each change requires confirmation.
 - [ ] Test the focused dialog at phone width and with the keyboard; verify the time field receives focus and all actions remain reachable. Repeat in Spanish.
+- [ ] Correct a timestamp and verify `*` appears only beside that timestamp (also in the collapsed summary for home times), with its original time underneath. Confirm its tooltip/accessible label explains the marker in both languages.
+- [ ] Correct the same timestamp again, then reload: the first recorded time must remain unchanged. Cancelled/invalid edits and changes to names, notes or kilometres must not add stars.
+- [ ] Clear a customer timestamp and verify the original remains available; filling an originally missing time should show that no original was recorded.
+- [ ] Export and re-import corrected history into a separate profile: verify stars, original timestamps and current values survive.
