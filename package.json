@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "test": "node --test",
     "test:ui": "node scripts/validate-history-ui.mjs",
+    "test:release": "npm test && npm run lint && npm run build && npm run test:ui -- --production",
     "preview": "vite preview"
   },
   "dependencies": {

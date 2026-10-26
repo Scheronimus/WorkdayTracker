@@ -128,6 +128,7 @@ npm run generate:production-qr
 ## Project documentation
 
 - [Changelog](CHANGELOG.md)
+- [Version 1.6.0 release notes and verification](docs/RELEASE-1.6.0.md)
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Testing and regression checklist](docs/TESTING.md)
