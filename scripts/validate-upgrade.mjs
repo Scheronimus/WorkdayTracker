@@ -124,6 +124,9 @@ try {
       await click('Confirm arrival home')
     }
     await evaluate('navigator.serviceWorker.ready.then(() => true)')
+    await command('Page.reload')
+    await delay(300)
+    await waitVersion('1.5.0')
     await waitFor(() => evaluate('Boolean(navigator.serviceWorker.controller)'), '1.5.0 service worker control')
     await click(scenario.language === 'es' ? 'Historial' : 'History')
     await evaluate(`(() => { const create = URL.createObjectURL; URL.createObjectURL = function(blob) { window.exportedCsv = blob.text(); return create.call(URL, blob); }; })()`)
@@ -135,8 +138,16 @@ try {
     assert.equal(JSON.parse(before['workday-tracker-history']).length, scenario.record ? 1 : scenario.history.length)
     activeRoot = resolve('dist')
     // Keep the old page and its data alive while the real production SW updates.
-    await evaluate('navigator.serviceWorker.getRegistration().then(registration => registration.update()).then(() => true)')
-    await delay(300)
+    await evaluate(`(async () => {
+      const registration = await navigator.serviceWorker.getRegistration();
+      await new Promise((resolve, reject) => {
+        const changed = () => { clearTimeout(timer); resolve(true); };
+        const timer = setTimeout(() => { navigator.serviceWorker.removeEventListener('controllerchange', changed); reject(new Error('Updated service worker did not take control')); }, 15000);
+        navigator.serviceWorker.addEventListener('controllerchange', changed, {once: true});
+        registration.update().catch(error => { clearTimeout(timer); reject(error); });
+      });
+      return true;
+    })()`)
     await command('Page.reload')
     await waitVersion(version)
     await delay(200)
