@@ -25,7 +25,7 @@ Browser checks cover 320/390/485/1280px history layouts, timestamp confirmation,
 
 Validated on 26 October 2026: all 42 unit tests, lint, production build, browser checks at all four widths, and production offline reload passed in Windows/Edge. WebKit/iPhone-emulation checks and a required macOS WebKit deployment job have also been added; this is not real-iOS device coverage. See [Safari and iPhone checks](IOS-TESTING.md) for the exact scope and remaining device setup.
 
-The 14 WebKit tests passed locally on Windows: six same-origin service-worker upgrade scenarios and eight English/Spanish phone-layout/version-notice cases. The six Chromium upgrade scenarios also passed after sharing the fixture matrix. macOS execution is configured in CI and has not yet run remotely; no actual iPhone/Home Screen app test has run.
+The 14 WebKit tests passed locally on Windows: six same-origin service-worker upgrade scenarios and eight English/Spanish phone-layout/version-notice cases. The six Chromium upgrade scenarios also passed after sharing the fixture matrix. The macOS WebKit CI job has also passed during release validation; production deployment still requires passing checks for the published commit. No actual iPhone/Home Screen app test has run.
 
 ### Strict upgrade verification
 
