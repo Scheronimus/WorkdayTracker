@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - develop
+      - 'release/**'
 
   workflow_dispatch:
 
@@ -103,6 +105,7 @@ jobs:
           if-no-files-found: ignore
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
