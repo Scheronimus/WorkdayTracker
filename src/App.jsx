@@ -14,6 +14,8 @@ import {
   undoLatestTimestamp,
 } from './workday'
 import HistoryEditor from './HistoryEditor'
+import ReleaseNotes from './ReleaseNotes.jsx'
+import { markReleaseNotesSeen, shouldShowReleaseNotes } from './releaseNotes.js'
 import './App.css'
 
 const STORAGE_KEY = 'workday-tracker-current'
@@ -169,10 +171,16 @@ function App() {
   const [editingDay, setEditingDay] = useState(null)
   const [editingTimestamp, setEditingTimestamp] = useState(null)
   const [historySaved, setHistorySaved] = useState(false)
+  const [showReleaseNotes, setShowReleaseNotes] = useState(() => shouldShowReleaseNotes(packageJson.version))
   const [importStatus, setImportStatus] = useState(null)
   const locale = locales[language] ?? locales.en
   const iosDevice = isIosDevice()
   const t = (key, replacements) => translate(language, key, replacements)
+
+  function dismissReleaseNotes() {
+    markReleaseNotesSeen(packageJson.version)
+    setShowReleaseNotes(false)
+  }
 
   function openHistoryEditor(day, timestamp = null) {
     setHistorySaved(false)
@@ -570,6 +578,8 @@ function App() {
               </p>
             )}
           </header>
+
+          {showReleaseNotes && <ReleaseNotes version={packageJson.version} t={t} onDismiss={dismissReleaseNotes} />}
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (
             <section className="day-overview" aria-label={t('workdayProgress')}>
@@ -1008,6 +1018,11 @@ function App() {
             <h2 id="options-title">{t('preferences')}</h2>
             <p className="status">{t('languageDescription')}</p>
           </div>
+
+          <details className="release-archive">
+            <summary>{t('whatsNew')} · v{packageJson.version}</summary>
+            <ReleaseNotes version={packageJson.version} t={t} />
+          </details>
 
           <fieldset className="language-panel">
             <legend>{t('language')}</legend>

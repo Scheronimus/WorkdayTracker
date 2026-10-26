@@ -17,6 +17,7 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Review before/after timestamp changes and explicitly confirm before saving; other edits save without an extra confirmation.
 - Correct any History timestamp directly using its Edit button, with a focused time/date dialog and saved confirmation.
 - Manually corrected timestamps show `*` and retain their original recorded value, including through CSV export/import.
+- See concise English/Spanish “What’s new” notes once per version, or read them again from Options.
 - Delete individual completed workdays after confirmation.
 - Export all completed workdays as CSV.
 - Import completed workdays from Options using a CSV exported by an earlier installation; existing history is preserved and duplicates are skipped.
@@ -125,6 +126,8 @@ npm run generate:production-qr
 ```
 
 ## Project documentation
+
+- [Changelog](CHANGELOG.md)
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Testing and regression checklist](docs/TESTING.md)

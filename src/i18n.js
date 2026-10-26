@@ -12,6 +12,12 @@ export const locales = {
 
 const messages = {
   en: {
+    whatsNew: 'What’s new',
+    dismissReleaseNotes: 'Dismiss release notes',
+    releaseEdit: 'Edit completed workdays in History.',
+    releaseConfirm: 'Use the pencil to correct a time, then confirm.',
+    releaseOriginals: 'Changed times show *. Original times are kept.',
+    releaseTransfer: 'CSV export includes corrected and original times.',
     originalTime: 'Original',
     manuallyChanged: 'Manually changed',
     csvTimestampCorrections: 'Original Timestamps',
@@ -158,6 +164,12 @@ const messages = {
     exportFilename: 'workday-history',
   },
   es: {
+    whatsNew: 'Novedades',
+    dismissReleaseNotes: 'Cerrar las novedades',
+    releaseEdit: 'Edita jornadas terminadas en Historial.',
+    releaseConfirm: 'Usa el lápiz para corregir una hora y confirma.',
+    releaseOriginals: 'Las horas modificadas llevan *. Se conservan las originales.',
+    releaseTransfer: 'El CSV incluye las horas corregidas y originales.',
     originalTime: 'Original',
     manuallyChanged: 'Modificado manualmente',
     csvTimestampCorrections: 'Fechas y horas originales',

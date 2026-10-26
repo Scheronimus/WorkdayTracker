@@ -166,7 +166,15 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Export and re-import corrected multi-day records into a separate browser profile; verify exact timestamps.
 - [ ] Repeat confirmation and cancellation in Spanish; verify keyboard focus stays in the dialog and returns to Edit workday after closing.
 
-## Quick timestamp correction
+## Version notice
+
+- [ ] On a fresh installation or after a version change, verify Today shows a concise “What’s new” card with the current package version.
+- [ ] Dismiss it and reload: it stays hidden without changing current workday or history data.
+- [ ] Read the notes again from Options → What’s new. Switch to Spanish and verify the notes and controls are translated.
+- [ ] Verify the card fits a narrow phone screen, can be dismissed by keyboard, and is available offline with the cached app.
+- [ ] For each release, update `package.json`/lockfile, the current notes in `src/i18n.js`, and `CHANGELOG.md`. Keep unreleased changes marked Unreleased until release.
+
+## Quick timestamp correction checks
 
 Run `npm run test:ui` with Edge or Chromium installed (or set `BROWSER_PATH`). It uses a temporary browser profile and synthetic data, verifies history row widths at 320, 390, 485 and 1280 pixels, exercises timestamp review and saving, and writes screenshots to `artifacts/history-ui/`. It requires permission to launch browser rendering processes. Screenshots are excluded from Git.
 
