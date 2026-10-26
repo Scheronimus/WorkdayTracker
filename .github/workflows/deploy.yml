@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -45,6 +45,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install pinned Chromium for browser checks
+        run: |
+          npx playwright install --with-deps chromium
+          release_browser_path=$(node -p "require('playwright').chromium.executablePath()")
+          echo "BROWSER_PATH=$release_browser_path" >> "$GITHUB_ENV"
 
       - name: Production browser checks
         run: npm run test:ui -- --production
