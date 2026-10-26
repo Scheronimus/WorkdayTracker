@@ -1,5 +1,13 @@
 # Manual Regression Checklist
 
+## Mobile design and usability
+
+Run `npm run test:ux` for development or `npm run test:ux -- --production` after building. Set `BROWSER_PATH` if Chromium/Edge is not automatically detected. Run `npm run test:ux -- --production --webkit` with Playwright WebKit installed to check the same flows in WebKit. Both are included in `test:release` and CI.
+
+The suite uses isolated synthetic records in English and Spanish at 320, 390, and 430 pixels. It checks a complete workday, timestamp undo, all sheets, Tab/Shift+Tab containment, Escape and focus restoration, 200% text, a shorter keyboard-sized viewport, overnight dates/originals, correction review, draft discard, CSV export, file-picker focus/target size, language and reload persistence. Screenshots are saved in `artifacts/mobile-ux/`.
+
+These checks do not emulate an actual software keyboard or an installed phone app. On physical iPhone and Android devices, verify that opening each input keeps it and the relevant action reachable; try portrait/landscape and installed/browser modes. Also check screen-reader labels, large text, outdoor readability, long customer names, and the eight-hour warning in both languages. The chronological route and all existing recording, recovery, confirmation, import/export, and offline behavior must remain available.
+
 ## Production upgrade gate
 
 Run `npm run test:release` before publication. It includes `npm run test:upgrade`, which builds tagged v1.5.0 and updates it to the candidate on the same browser origin through the real service worker. Every pre-existing localStorage value must remain byte-for-byte identical through update, reload, navigation, offline loading and cancellation. Confirmed corrections and actual old/new CSV exports are also checked. Evidence is saved under `artifacts/upgrade-ui/`.

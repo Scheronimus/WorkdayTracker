@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import packageJson from '../package.json'
 import { importWorkdaysFromCsv } from './csvImport'
 import { LANGUAGE_KEY, languageOptions, locales, translate } from './i18n'
@@ -15,6 +15,8 @@ import {
 } from './workday'
 import HistoryEditor from './HistoryEditor'
 import ReleaseNotes from './ReleaseNotes.jsx'
+import Sheet from './Sheet'
+import Icon from './Icon'
 import { markReleaseNotesSeen, shouldShowReleaseNotes } from './releaseNotes.js'
 import './App.css'
 
@@ -67,6 +69,15 @@ function formatClock(timestamp, locale) {
   return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
+  }).format(new Date(timestamp))
+}
+
+function formatHistoryTime(timestamp, day, locale, seconds = true) {
+  // Share the day's date in the heading, but keep cross-date events explicit.
+  const sameDate = csvDate(timestamp) === csvDate(day.leftHomeAt)
+  return new Intl.DateTimeFormat(locale, {
+    ...(sameDate ? {} : { day: '2-digit', month: 'short', year: 'numeric' }),
+    hour: '2-digit', minute: '2-digit', ...(seconds ? { second: '2-digit' } : {}),
   }).format(new Date(timestamp))
 }
 
@@ -153,6 +164,9 @@ function NavigationIcon({ name }) {
 }
 
 function App() {
+  const shellRef = useRef(null)
+  const navigationRef = useRef(null)
+  const dockRef = useRef(null)
   const [activeView, setActiveView] = useState('today')
   const [language, setLanguage] = useState(readLanguage)
   const [now, setNow] = useState(() => Date.now())
@@ -176,6 +190,8 @@ function App() {
   const locale = locales[language] ?? locales.en
   const iosDevice = isIosDevice()
   const t = (key, replacements) => translate(language, key, replacements)
+  const formatKilometres = value => value == null || value === '' ? '—'
+    : new Intl.NumberFormat(locale, { maximumFractionDigits: 20 }).format(value)
 
   function dismissReleaseNotes() {
     markReleaseNotesSeen(packageJson.version)
@@ -188,16 +204,16 @@ function App() {
     setEditingDay(day)
   }
 
-  function timestampRow(day, path, value, title) {
+  function timestampRow(day, path, value, title, editTitle = title) {
     const correction = day.timestampCorrections?.[path]
     return <div className="history-timestamp-row">
-      <div><span>{title}</span><strong>{value ? formatTime(value, locale) : t('notRecorded')}{timestampStar(day, path)}</strong>
-        {correction && <small className="original-timestamp">{t('originalTime')}: {correction.original ? formatTime(correction.original, locale) : t('notRecorded')}</small>}
+      <div><span>{title}</span><strong>{value ? formatHistoryTime(value, day, locale) : t('notRecorded')}{timestampStar(day, path)}</strong>
+        {correction && <small className="original-timestamp">{t('originalTime')}: {correction.original ? formatHistoryTime(correction.original, day, locale) : t('notRecorded')}</small>}
       </div>
       <button className="timestamp-edit-button" type="button"
-        aria-label={t('editTimestamp', { event: title })}
-        title={t('editTimestamp', { event: title })}
-        onClick={() => openHistoryEditor(day, path)}>
+        aria-label={t('editTimestamp', { event: editTitle })}
+        title={t('editTimestamp', { event: editTitle })}
+        onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); openHistoryEditor(day, path) }}>
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="m15 5 4 4M4 20l4.5-1 12-12a2.8 2.8 0 0 0-4-4l-12 12L4 20Z" />
         </svg>
@@ -212,6 +228,26 @@ function App() {
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [activeView])
+
+  useLayoutEffect(() => {
+    const shell = shellRef.current
+    let frame
+    function measure() {
+      shell.style.setProperty('--nav-height', `${navigationRef.current?.getBoundingClientRect().height ?? 0}px`)
+      shell.style.setProperty('--dock-height', `${dockRef.current?.getBoundingClientRect().height ?? 0}px`)
+      shell.dataset.largeText = String(Number.parseFloat(getComputedStyle(shell).fontSize) >= 24)
+    }
+    // Apply measurements on the next frame so changes to large-text layouts
+    // cannot cause a ResizeObserver delivery loop in WebKit.
+    const observer = new ResizeObserver(() => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(measure)
+    })
+    if (navigationRef.current) observer.observe(navigationRef.current)
+    if (dockRef.current) observer.observe(dockRef.current)
+    measure()
+    return () => { observer.disconnect(); cancelAnimationFrame(frame) }
+  }, [activeView, workday?.leftHomeAt, workday?.arrivedHomeAt])
 
   useEffect(() => {
     if (!historySaved) return
@@ -552,9 +588,9 @@ function App() {
     }
   }
 
-  function openCustomerSheet() {
+  function openCustomerSheet(event) {
+    event.currentTarget.focus({ preventScroll: true })
     setIsCustomerSheetOpen(true)
-    window.setTimeout(() => document.querySelector('#customer-name')?.focus(), 0)
   }
 
   async function installApp() {
@@ -564,8 +600,66 @@ function App() {
     setInstallPrompt(null)
   }
 
+  function renderVisit(visit, index) {
+    const isCurrent = visit.id === currentActionVisit?.id
+    const isComplete = Boolean(visit.leftAt) && !isCurrent
+    return (<article
+              className={`visit-card route-stop ${isCurrent ? 'current' : isComplete ? 'complete' : 'upcoming'} ${isComplete && undoableTimestamp?.visitId !== visit.id ? 'compact' : ''}`}
+              key={visit.id}
+            >
+              <div className="visit-heading">
+                <span className="visit-number">{isComplete ? <Icon name="check" /> : index + 1}</span>
+                <div>
+                  <h2>{visit.name}</h2>
+                  {!isComplete && <p className="visit-state">{t(!isCurrent ? 'upcomingStop' : visit.arrivedAt ? 'atCustomer' : 'travellingToCustomer')}</p>}
+                  {isComplete && (
+                    <p className="visit-summary">
+                      {visit.arrivedAt ? formatClock(visit.arrivedAt, locale) : t('notRecorded')}{timestampStar(workday, `visits.${index}.arrivedAt`)}–{formatClock(visit.leftAt, locale)}{timestampStar(workday, `visits.${index}.leftAt`)}
+                      {visit.kilometres != null ? ` · ${formatKilometres(visit.kilometres)} km` : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="timestamps visit-detail">
+                <p>
+                  <span>{t('arrived')}</span>
+                  <strong>{visit.arrivedAt ? formatHistoryTime(visit.arrivedAt, workday, locale) : t('notYet')}{timestampStar(workday, `visits.${index}.arrivedAt`)}</strong>
+                  {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'arrivedAt' && (
+                    <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
+                      {t('undoTimestamp')}
+                    </button>
+                  )}
+                </p>
+                <p>
+                  <span>{t('left')}</span>
+                  <strong>{visit.leftAt ? formatHistoryTime(visit.leftAt, workday, locale) : t('notYet')}{timestampStar(workday, `visits.${index}.leftAt`)}</strong>
+                  {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'leftAt' && (
+                    <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
+                      {t('undoTimestamp')}
+                    </button>
+                  )}
+                </p>
+              </div>
+
+              <label className="kilometres-field visit-detail">
+                {kilometresLegLabel(workday.visits, index, t)}
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.1"
+                  placeholder={t('unknownForNow')}
+                  value={visit.kilometres ?? ''}
+                  onChange={(event) => updateVisitKilometres(visit.id, event.target.value)}
+                />
+              </label>
+
+            </article>)
+  }
+
   return (
-    <main className="app-shell">
+    <main ref={shellRef} className={`app-shell${workday?.leftHomeAt && !workday.arrivedHomeAt ? ' has-active-day' : ''}`}>
       {activeView === 'today' && (
         <div className="view">
           <header className="app-header">
@@ -579,7 +673,7 @@ function App() {
             )}
           </header>
 
-          {showReleaseNotes && <ReleaseNotes version={packageJson.version} t={t} onDismiss={dismissReleaseNotes} />}
+          {showReleaseNotes && <ReleaseNotes version={packageJson.version} t={t} onDismiss={dismissReleaseNotes} compact />}
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (
             <section className="day-overview" aria-label={t('workdayProgress')}>
@@ -593,14 +687,14 @@ function App() {
               </div>
               <div>
                 <span>{t('distance')}</span>
-                <strong>{totalKilometres(workday) ?? '—'} km</strong>
+                <strong>{formatKilometres(totalKilometres(workday))} km</strong>
               </div>
             </section>
           )}
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (
-            <button className="day-note-button" type="button" onClick={() => setIsNoteSheetOpen(true)}>
-              <span aria-hidden="true">✎</span>
+            <button className="day-note-button" type="button" aria-label={t(workday.note?.trim() ? 'editDayNote' : 'addDayNote')} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setIsNoteSheetOpen(true) }}>
+              <Icon name="note" />
               <span>
                 <strong>{workday.note?.trim() ? t('editDayNote') : t('addDayNote')}</strong>
                 {workday.note?.trim() && <small>{t('noteAdded')}</small>}
@@ -617,7 +711,7 @@ function App() {
 
           {(!workday || !workday.leftHomeAt) && (
             <section className="prepared-day" aria-labelledby="prepared-day-title">
-              <div className="prepared-day-icon" aria-hidden="true">✓</div>
+              <div className="prepared-day-icon"><Icon name="check" /></div>
               <div>
                 <p className="eyebrow">{t('preparedFor')}</p>
                 <h2 id="prepared-day-title">{formatDate(now, locale)}</h2>
@@ -631,6 +725,12 @@ function App() {
 
           {workday?.leftHomeAt && !workday.arrivedHomeAt && (
             <>
+              {currentActionVisit && (
+                <section className="current-stop" aria-label={t('currentAction')}>
+                  {renderVisit(currentActionVisit, workday.visits.findIndex(visit => visit.id === currentActionVisit.id))}
+                </section>
+              )}
+              <h2 className="route-heading">{t('workdayRoute')}</h2>
               <section className="timeline" aria-label={t('workdayRoute')}>
                 <div className="timeline-row home-row route-stop complete">
                   <span className="dot" />
@@ -645,60 +745,7 @@ function App() {
                   </div>
                 </div>
 
-          {workday.visits.map((visit, index) => (
-            <article
-              className={`visit-card route-stop ${visit.leftAt ? 'complete' : 'current'} ${visit.leftAt && undoableTimestamp?.visitId !== visit.id ? 'compact' : ''}`}
-              key={visit.id}
-            >
-              <div className="visit-heading">
-                <span className="visit-number">{visit.leftAt ? '✓' : index + 1}</span>
-                <div>
-                  <h2>{visit.name}</h2>
-                  {visit.leftAt && (
-                    <p className="visit-summary">
-                      {formatClock(visit.arrivedAt, locale)}{timestampStar(workday, `visits.${index}.arrivedAt`)}–{formatClock(visit.leftAt, locale)}{timestampStar(workday, `visits.${index}.leftAt`)}
-                      {visit.kilometres !== null ? ` · ${visit.kilometres} km` : ''}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <label className="kilometres-field visit-detail">
-                {kilometresLegLabel(workday.visits, index, t)}
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min="0"
-                  step="0.1"
-                  placeholder={t('unknownForNow')}
-                  value={visit.kilometres ?? ''}
-                  onChange={(event) => updateVisitKilometres(visit.id, event.target.value)}
-                />
-              </label>
-
-              <div className="timestamps visit-detail">
-                <p>
-                  <span>{t('arrived')}</span>
-                  <strong>{visit.arrivedAt ? formatTime(visit.arrivedAt, locale) : t('notYet')}{timestampStar(workday, `visits.${index}.arrivedAt`)}</strong>
-                  {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'arrivedAt' && (
-                    <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
-                      {t('undoTimestamp')}
-                    </button>
-                  )}
-                </p>
-                <p>
-                  <span>{t('left')}</span>
-                  <strong>{visit.leftAt ? formatTime(visit.leftAt, locale) : t('notYet')}{timestampStar(workday, `visits.${index}.leftAt`)}</strong>
-                  {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'leftAt' && (
-                    <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
-                      {t('undoTimestamp')}
-                    </button>
-                  )}
-                </p>
-              </div>
-
-            </article>
-          ))}
+          {workday.visits.map((visit, index) => visit.id !== currentActionVisit?.id && renderVisit(visit, index))}
 
           <div className={`timeline-row route-stop next-home${isTravellingHome ? ' current' : ''}`}>
             <span className="dot" />
@@ -706,22 +753,22 @@ function App() {
               <strong>{t('home')}</strong>
               <span>{t(isTravellingHome ? 'travellingHome' : 'endOfRoute')}</span>
               {isTravellingHome && workday.kilometresHome !== null && (
-                <span>{workday.kilometresHome} km</span>
+                <span>{formatKilometres(workday.kilometresHome)} km</span>
               )}
             </div>
           </div>
 
               </section>
 
-              <div className="action-dock" aria-label={t('currentAction')}>
+              <div ref={dockRef} className="action-dock" aria-label={t('currentAction')}>
                 {currentActionVisit && !currentActionVisit.arrivedAt && (
                   <button className="primary" onClick={() => recordVisitTime(currentActionVisit.id, 'arrivedAt')}>
-                    {t('arrivedAt', { name: currentActionVisit.name })}
+                    <span className="action-label">{t('arrivedAt', { name: currentActionVisit.name })}</span>
                   </button>
                 )}
                 {currentActionVisit?.arrivedAt && !currentActionVisit.leftAt && (
                   <button className="primary" onClick={() => recordVisitTime(currentActionVisit.id, 'leftAt')}>
-                    {t('leaveCustomer', { name: currentActionVisit.name })}
+                    <span className="action-label">{t('leaveCustomer', { name: currentActionVisit.name })}</span>
                   </button>
                 )}
                 {canAddCustomer && (
@@ -731,14 +778,14 @@ function App() {
                     </button>
                     <button
                       className="finish-workday-button"
-                      onClick={() => setIsFinishSheetOpen(true)}
+                      onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setIsFinishSheetOpen(true) }}
                     >
                       {t('driveHome')}
                     </button>
                   </>
                 )}
                 {canArriveHome && (
-                  <button className="primary" onClick={() => setIsFinishSheetOpen(true)}>
+                  <button className="primary" onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setIsFinishSheetOpen(true) }}>
                     {t('arrivedHomeNow')}
                   </button>
                 )}
@@ -758,20 +805,7 @@ function App() {
           )}
 
           {isCustomerSheetOpen && canAddCustomer && (
-            <div
-              className="sheet-backdrop"
-              role="presentation"
-              onMouseDown={(event) => {
-                if (event.target === event.currentTarget) setIsCustomerSheetOpen(false)
-              }}
-            >
-              <section
-                className="customer-sheet"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="customer-sheet-title"
-              >
-                <div className="sheet-handle" aria-hidden="true" />
+            <Sheet titleId="customer-sheet-title" onClose={() => setIsCustomerSheetOpen(false)}>
                 <div className="sheet-heading">
                   <div>
                     <p className="eyebrow">{t('nextOnRoute')}</p>
@@ -783,7 +817,7 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsCustomerSheetOpen(false)}
                   >
-                    <span className="close-sheet-icon" aria-hidden="true" />
+                    <Icon name="close" />
                   </button>
                 </div>
 
@@ -809,6 +843,7 @@ function App() {
                     {t('customerName')}
                     <input
                       id="customer-name"
+                      data-primary-focus
                       autoComplete="organization"
                       value={name}
                       onChange={(event) => setName(event.target.value)}
@@ -829,25 +864,11 @@ function App() {
                   </label>
                   <button className="primary" type="submit">{t('addToRoute')}</button>
                 </form>
-              </section>
-            </div>
+            </Sheet>
           )}
 
           {isNoteSheetOpen && workday?.leftHomeAt && !workday.arrivedHomeAt && (
-            <div
-              className="sheet-backdrop"
-              role="presentation"
-              onMouseDown={(event) => {
-                if (event.target === event.currentTarget) setIsNoteSheetOpen(false)
-              }}
-            >
-              <section
-                className="customer-sheet note-sheet"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="note-sheet-title"
-              >
-                <div className="sheet-handle" aria-hidden="true" />
+            <Sheet titleId="note-sheet-title" className="note-sheet" onClose={() => setIsNoteSheetOpen(false)}>
                 <div className="sheet-heading">
                   <div>
                     <p className="eyebrow">{t('workdayInProgress')}</p>
@@ -859,38 +880,26 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsNoteSheetOpen(false)}
                   >
-                    <span className="close-sheet-icon" aria-hidden="true" />
+                    <Icon name="close" />
                   </button>
                 </div>
-                <p className="sheet-description">{t('dayNoteDescription')}</p>
+                <p className="sheet-description" id="note-description">{t('dayNoteDescription')}</p>
                 <textarea
-                  autoFocus
+                  data-primary-focus
+                  aria-label={t('dayNote')}
+                  aria-describedby="note-description"
                   value={workday.note ?? ''}
                   placeholder={t('dayNotePlaceholder')}
                   onChange={(event) => updateWorkdayNote(event.target.value)}
                 />
                 <p className="autosave-status">
-                  <span aria-hidden="true">✓</span> {t('noteSavedAutomatically')}
+                  <Icon name="check" /> {t('noteSavedAutomatically')}
                 </p>
-              </section>
-            </div>
+            </Sheet>
           )}
 
           {isFinishSheetOpen && (canStartHomeJourney || canArriveHome) && (
-            <div
-              className="sheet-backdrop"
-              role="presentation"
-              onMouseDown={(event) => {
-                if (event.target === event.currentTarget) setIsFinishSheetOpen(false)
-              }}
-            >
-              <section
-                className="customer-sheet finish-sheet"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="finish-sheet-title"
-              >
-                <div className="sheet-handle" aria-hidden="true" />
+            <Sheet titleId="finish-sheet-title" className="finish-sheet" onClose={() => setIsFinishSheetOpen(false)}>
                 <div className="sheet-heading">
                   <div>
                     <p className="eyebrow">{t(isTravellingHome ? 'finalStep' : 'finalJourney')}</p>
@@ -902,7 +911,7 @@ function App() {
                     aria-label={t('close')}
                     onClick={() => setIsFinishSheetOpen(false)}
                   >
-                    <span className="close-sheet-icon" aria-hidden="true" />
+                    <Icon name="close" />
                   </button>
                 </div>
 
@@ -916,7 +925,7 @@ function App() {
                     inputMode="decimal"
                     min="0"
                     step="0.1"
-                    autoFocus
+                    data-primary-focus
                     placeholder={t('optional')}
                     value={workday.kilometresHome ?? ''}
                     onChange={(event) => updateHomeKilometres(event.target.value)}
@@ -929,8 +938,7 @@ function App() {
                 >
                   {t(isTravellingHome ? 'confirmArrivalHome' : 'startDriveHome')}
                 </button>
-              </section>
-            </div>
+            </Sheet>
           )}
         </div>
       )}
@@ -961,14 +969,14 @@ function App() {
                   <summary>
                     <div>
                       <strong>{formatDate(day.leftHomeAt, locale)}</strong>
-                      <span>{formatClock(day.leftHomeAt, locale)}{timestampStar(day, 'leftHomeAt')}–{formatClock(day.arrivedHomeAt, locale)}{timestampStar(day, 'arrivedHomeAt')}</span>
+                      <span>{formatClock(day.leftHomeAt, locale)}{timestampStar(day, 'leftHomeAt')}–{formatHistoryTime(day.arrivedHomeAt, day, locale, false)}{timestampStar(day, 'arrivedHomeAt')}</span>
                       <span>{t(day.visits.length === 1 ? 'customerCount' : 'customerCountPlural', { count: day.visits.length })}</span>
                       {day.note?.trim() && <span>{t('noteAdded')}</span>}
                       {kilometresIncomplete && (
                         <span className="history-kilometres-warning">{t('kilometresIncomplete')}</span>
                       )}
                     </div>
-                    <span className="history-total">{total === null ? t('noKmRecorded') : `${total} km`}</span>
+                    <span className="history-total">{total === null ? t('noKmRecorded') : kilometresIncomplete ? t('kilometresRecorded', { count: formatKilometres(total) }) : `${formatKilometres(total)} km`}</span>
                   </summary>
 
                   <div className="history-details">
@@ -976,15 +984,15 @@ function App() {
                     {timestampRow(day, 'arrivedHomeAt', day.arrivedHomeAt, t('arrivedHome'))}
                     {Object.keys(day.timestampCorrections ?? {}).length > 0 && <small className="original-timestamp">* {t('manuallyChanged')}</small>}
 
-                    <p>{day.note || t('dayNotePlaceholder')}</p>
+                    {day.note?.trim() && <div className="history-day-note"><h3>{t('dayNote')}</h3><p>{day.note}</p></div>}
                     {day.visits.map((visit, index) => <article className="history-visit" key={visit.id}>
                       <h3>{index + 1}. {visit.name}</h3>
-                      {timestampRow(day, `visits.${index}.arrivedAt`, visit.arrivedAt, `${visit.name}: ${t('arrived')}`)}
-                      {timestampRow(day, `visits.${index}.leftAt`, visit.leftAt, `${visit.name}: ${t('left')}`)}
-                      <p>{kilometresLegLabel(day.visits, index, t)}: {visit.kilometres ?? '—'} km</p>
+                      {timestampRow(day, `visits.${index}.arrivedAt`, visit.arrivedAt, t('arrived'), `${visit.name}: ${t('arrived')}`)}
+                      {timestampRow(day, `visits.${index}.leftAt`, visit.leftAt, t('left'), `${visit.name}: ${t('left')}`)}
+                      <p className="history-distance"><span>{index === 0 ? t('home') : day.visits[index - 1].name} → {visit.name}</span><strong>{formatKilometres(visit.kilometres)} km</strong></p>
                     </article>)}
-                    <p>{homeKilometresLegLabel(day.visits, t)}: {day.kilometresHome ?? '—'} km</p>
-                    <button className="secondary" onClick={() => openHistoryEditor(day)}>{t('editWorkday')}</button>
+                    <p className="history-distance"><span>{day.visits.at(-1)?.name ?? t('home')} → {t('home')}</span><strong>{formatKilometres(day.kilometresHome)} km</strong></p>
+                    <button className="secondary" onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); openHistoryEditor(day) }}>{t('editWorkday')}</button>
                     {latestCompleted?.id === day.id && canReopenWorkday(day, workday, history) && (
                       <button
                         className="reopen-workday-button"
@@ -1016,13 +1024,8 @@ function App() {
           <div className="section-heading">
             <p className="eyebrow">{t('options')}</p>
             <h2 id="options-title">{t('preferences')}</h2>
-            <p className="status">{t('languageDescription')}</p>
+            <p className="status">{t('optionsDescription')}</p>
           </div>
-
-          <details className="release-archive">
-            <summary>{t('whatsNew')} · v{packageJson.version}</summary>
-            <ReleaseNotes version={packageJson.version} t={t} />
-          </details>
 
           <fieldset className="language-panel">
             <legend>{t('language')}</legend>
@@ -1037,7 +1040,7 @@ function App() {
                 />
                 <span>
                   <strong>{t(option.value === 'en' ? 'english' : 'spanish')}</strong>
-                  <small>{option.nativeLabel}</small>
+                  {option.nativeLabel !== t(option.value === 'en' ? 'english' : 'spanish') && <small lang={option.value}>{option.nativeLabel}</small>}
                 </span>
               </label>
             ))}
@@ -1074,6 +1077,7 @@ function App() {
               <p className="panel-eyebrow">{t('dataTransfer')}</p>
               <h3 id="data-transfer-title">{t('importCsv')}</h3>
               <p>{t('importCsvDescription')}</p>
+              <p>{t('exportFromHistory')}</p>
             </div>
             <label className="secondary import-button">
               {t('chooseCsvFile')}
@@ -1085,10 +1089,18 @@ function App() {
               </p>
             )}
           </section>
+          <section className="about-panel" aria-labelledby="about-title">
+            <h3 id="about-title">{t('aboutApp')}</h3>
+            <p>{t('localStorageDescription')}</p>
+            <details className="release-archive">
+              <summary>{t('whatsNew')} · v{packageJson.version}</summary>
+              <ReleaseNotes version={packageJson.version} t={t} />
+            </details>
+          </section>
         </section>
       )}
 
-      <nav className="bottom-nav" aria-label={t('primaryNavigation')}>
+      <nav ref={navigationRef} className="bottom-nav" aria-label={t('primaryNavigation')}>
         <button
           className={activeView === 'today' ? 'active' : ''}
           type="button"

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
+import { chromium } from '@playwright/test'
 import { deployment } from '../deployment.config.mjs'
 import { importWorkdaysFromCsv } from '../src/csvImport.js'
 
@@ -18,13 +18,11 @@ const browserPath = process.env.BROWSER_PATH || [
   '/usr/bin/chromium', '/usr/bin/google-chrome',
 ].find(existsSync)
 assert.ok(browserPath, 'Set BROWSER_PATH to a Chromium browser executable')
-const profile = await mkdtemp(join(tmpdir(), 'workday-history-ui-'))
 const output = resolve('artifacts/history-ui', new Date().toISOString().replaceAll(':', '-'))
 await mkdir(output, { recursive: true })
 const production = process.argv.includes('--production')
 const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', ...(production ? ['preview'] : []), '--host', '127.0.0.1', '--port', '5178', '--strictPort'], { windowsHide: true, stdio: 'ignore' })
 let browser
-let socket
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms))
 async function waitFor(check, description) {
   for (let attempt = 0; attempt < 100; attempt++) {
@@ -36,42 +34,11 @@ async function waitFor(check, description) {
 try {
   const url = `http://127.0.0.1:5178${deployment.basePath}`
   await waitFor(async () => { try { return (await fetch(url)).ok } catch { return false } }, 'Vite server')
-  browser = spawn(browserPath, [
-    ...(process.env.CI ? ['--no-sandbox'] : []),
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    '--remote-debugging-port=9338', `--user-data-dir=${profile}`, 'about:blank',
-  ], { windowsHide: true, stdio: 'ignore' })
-  let page
-  await waitFor(async () => {
-    try {
-      page = (await (await fetch('http://127.0.0.1:9338/json')).json()).find((page) => page.type === 'page')
-      return Boolean(page)
-    } catch { return false }
-  }, 'headless browser')
-  socket = new WebSocket(page.webSocketDebuggerUrl)
-  await new Promise((resolve, reject) => {
-    socket.addEventListener('open', resolve, { once: true })
-    socket.addEventListener('error', reject, { once: true })
-  })
-  const pending = new Map()
-  let nextId = 0
-  socket.addEventListener('message', (event) => {
-    const response = JSON.parse(event.data)
-    if (response.id) pending.get(response.id)?.(response)
-  })
-  function cdp(method, params = {}) {
-    return new Promise((resolve, reject) => {
-      const id = ++nextId
-      const timeout = setTimeout(() => { pending.delete(id); reject(new Error(`Browser did not respond: ${method}`)) }, 10000)
-      pending.set(id, (response) => {
-        clearTimeout(timeout)
-        pending.delete(id)
-        if (response.error) reject(new Error(JSON.stringify(response.error)))
-        else resolve(response.result)
-      })
-      socket.send(JSON.stringify({ id, method, params }))
-    })
-  }
+  browser = await chromium.launch({ executablePath: browserPath })
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  const session = await context.newCDPSession(page)
+  const cdp = (method, params = {}) => session.send(method, params)
   async function evaluate(expression) {
     const result = await cdp('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })
     if (result.exceptionDetails) throw new Error(JSON.stringify(result.exceptionDetails))
@@ -210,7 +177,6 @@ try {
   }
   console.log(`PASS: English/Spanish release notes and dismissal persistence; layout at 320/390/485/1280px; correction confirmation, originals, stars, CSV round-trip, and save feedback. Screenshots: ${output}`)
 } finally {
-  socket?.close()
-  browser?.kill()
+  await browser?.close()
   server.kill()
 }

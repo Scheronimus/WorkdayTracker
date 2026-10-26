@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict'
 import { upgradeScenarios } from './upgrade-fixtures.mjs'
-import { spawn, execFileSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, writeFile, mkdtemp } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
-import { tmpdir } from 'node:os'
 import { resolve, join, extname, sep } from 'node:path'
 import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
+import { chromium } from '@playwright/test'
 import { deployment } from '../deployment.config.mjs'
 import { importWorkdaysFromCsv } from '../src/csvImport.js'
 
@@ -48,13 +48,10 @@ const browserPath = process.env.BROWSER_PATH || [
   'C:/Program Files/Google/Chrome/Application/chrome.exe', '/usr/bin/chromium', '/usr/bin/google-chrome',
 ].find(existsSync)
 assert.ok(browserPath, 'Set BROWSER_PATH to Edge or Chromium')
-const profile = await mkdtemp(join(tmpdir(), 'workday-upgrade-'))
-const browser = spawn(browserPath, [...(process.env.CI ? ['--no-sandbox'] : []), '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=9342', `--user-data-dir=${profile}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' })
+let browser
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms))
-let socket
 const results = []
 try {
-  let endpoint
   async function waitFor(check, message) {
     for (let i = 0; i < 150; i++) {
       if (await check()) return
@@ -62,36 +59,14 @@ try {
     }
     throw new Error(`Timed out: ${message}`)
   }
-  await waitFor(async () => {
-    try { endpoint = (await (await fetch('http://127.0.0.1:9342/json/version')).json()).webSocketDebuggerUrl; return Boolean(endpoint) } catch { return false }
-  }, 'browser startup')
-  socket = new WebSocket(endpoint)
-  await new Promise((resolve, reject) => { socket.addEventListener('open', resolve, { once: true }); socket.addEventListener('error', reject, { once: true }) })
-  const pending = new Map()
-  let id = 0
-  socket.addEventListener('message', (event) => {
-    const message = JSON.parse(event.data)
-    if (message.id) pending.get(message.id)?.(message)
-  })
-  function cdp(method, params = {}, sessionId) {
-    return new Promise((resolve, reject) => {
-      const call = ++id
-      const timer = setTimeout(() => { pending.delete(call); reject(new Error(`Browser timeout: ${method}`)) }, 20000)
-      pending.set(call, (message) => {
-        clearTimeout(timer); pending.delete(call)
-        if (message.error) reject(new Error(JSON.stringify(message.error)))
-        else resolve(message.result)
-      })
-      socket.send(JSON.stringify({ id: call, method, params, ...(sessionId ? { sessionId } : {}) }))
-    })
-  }
+  browser = await chromium.launch({ executablePath: browserPath })
   const scenarios = upgradeScenarios()
   for (const scenario of scenarios) {
     activeRoot = oldDist
-    const { browserContextId } = await cdp('Target.createBrowserContext')
-    const { targetId } = await cdp('Target.createTarget', { url: 'about:blank', browserContextId })
-    const { sessionId } = await cdp('Target.attachToTarget', { targetId, flatten: true })
-    const command = (method, params = {}) => cdp(method, params, sessionId)
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    const session = await context.newCDPSession(page)
+    const command = (method, params = {}) => session.send(method, params)
     async function evaluate(expression) {
       const value = await command('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })
       if (value.exceptionDetails) throw new Error(JSON.stringify(value.exceptionDetails))
@@ -224,8 +199,7 @@ try {
     assert.deepEqual(await snapshot(), afterEdit, 'Offline reload preserves corrections and all unrelated data')
     results.push({ scenario: scenario.name, records: expected.length, baselineSha, storageSha256: createHash('sha256').update(JSON.stringify(before)).digest('hex'), passed: true })
     console.log(`PASS ${scenario.name}: exact upgrade preservation, old CSV, reload, offline, cancel, confirmed edit, originals and new CSV (${expected.length} records)`)
-    // Keep isolated contexts alive until browser shutdown (Edge may exit when
-    // its last incognito context is disposed between scenarios).
+    await context.close()
   }
   await writeFile(join(output, 'report.json'), JSON.stringify({ baselineRef, baselineSha, candidateVersion: version, browser: browserPath, scenarios: results }, null, 2))
   console.log(`Upgrade validation passed. Evidence: ${output}`)
@@ -233,8 +207,7 @@ try {
   await writeFile(join(output, 'report.json'), JSON.stringify({ baselineRef, baselineSha, candidateVersion: version, passed: false, error: error.message, scenarios: results }, null, 2))
   throw error
 } finally {
-  socket?.close()
-  browser.kill()
+  await browser?.close()
   server.closeAllConnections()
   server.close()
 }

@@ -13,6 +13,8 @@ dist-ssr
 artifacts/history-ui/
 artifacts/upgrade-ui/
 artifacts/webkit-*/
+artifacts/mobile-ux/
+artifacts/ux-review/
 *.local
 
 # Editor directories and files

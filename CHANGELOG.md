@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Refine Today, History, Options, and editing with shared typography, spacing, surfaces, icons, and larger phone targets in English and Spanish.
+- Emphasize the current stop and show timestamps before secondary distance fields; clarify elapsed workday time and incomplete distance subtotals.
+- Simplify History labels while keeping seconds, correction markers, originals, and overnight dates visible.
+- Group preferences, data transfer, installation guidance, and app information; make version notices compact with expandable details.
+
+### Fixed
+
+- Keep sheet keyboard focus inside native modal dialogs, make the background inert, support Escape, and restore focus when closing.
+- Adapt dialogs to the visible phone viewport and measure action/navigation clearance, including enlarged text.
+- Give the CSV chooser a 48-pixel target and visible keyboard focus; label the note field explicitly.
+- Use Playwright-managed Chromium sessions for existing browser checks, avoiding local raw-WebSocket transport timeouts.
+
+### Validation
+
+- Add English/Spanish mobile usability checks at 320, 390, and 430 pixels, with Chromium and WebKit support, screenshots, full workday recording, modal keyboard interaction, large text, overnight corrections, draft discard, CSV, and persistence.
+- Include the mobile usability suites in the release command and deployment checks. No storage or CSV format changes.
+
 ## 1.6.0 — 2026-10-26
 
 ### Added

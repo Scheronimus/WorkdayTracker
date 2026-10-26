@@ -55,6 +55,9 @@ jobs:
       - name: Production browser checks
         run: npm run test:ui -- --production
 
+      - name: English and Spanish mobile usability checks
+        run: npm run test:ux -- --production
+
       - name: Production data upgrade checks
         run: npm run test:upgrade
 
@@ -65,6 +68,7 @@ jobs:
           name: release-validation
           path: |
             artifacts/history-ui/
+            artifacts/mobile-ux/
             artifacts/upgrade-ui/**/report.json
             artifacts/upgrade-ui/**/*.png
           if-no-files-found: ignore
@@ -100,6 +104,8 @@ jobs:
         run: npm run build
       - name: WebKit data upgrade and iPhone layout checks
         run: npm run test:webkit
+      - name: WebKit English and Spanish usability checks
+        run: npm run test:ux -- --production --webkit
       - name: Upload WebKit evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -108,6 +114,7 @@ jobs:
           path: |
             artifacts/webkit-results/
             artifacts/webkit-report/
+            artifacts/mobile-ux/webkit/
           if-no-files-found: ignore
 
   deploy:

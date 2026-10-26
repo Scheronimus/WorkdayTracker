@@ -12,9 +12,10 @@
     "lint": "eslint .",
     "test": "node --test \"src/*.test.js\" \"scripts/*.test.mjs\"",
     "test:ui": "node scripts/validate-history-ui.mjs",
+    "test:ux": "node scripts/validate-mobile-ux.mjs",
     "test:upgrade": "node scripts/validate-upgrade.mjs",
     "test:webkit": "playwright test",
-    "test:release": "npm test && npm run lint && npm run build && npm run test:ui -- --production && npm run test:upgrade && npm run test:webkit",
+    "test:release": "npm test && npm run lint && npm run build && npm run test:ui -- --production && npm run test:ux -- --production && npm run test:upgrade && npm run test:webkit && npm run test:ux -- --production --webkit",
     "preview": "vite preview"
   },
   "dependencies": {
