@@ -37,6 +37,7 @@ try {
   const url = `http://127.0.0.1:5178${deployment.basePath}`
   await waitFor(async () => { try { return (await fetch(url)).ok } catch { return false } }, 'Vite server')
   browser = spawn(browserPath, [
+    ...(process.env.CI ? ['--no-sandbox'] : []),
     '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--remote-debugging-port=9338', `--user-data-dir=${profile}`, 'about:blank',
   ], { windowsHide: true, stdio: 'ignore' })

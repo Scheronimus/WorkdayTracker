@@ -49,7 +49,7 @@ const browserPath = process.env.BROWSER_PATH || [
 ].find(existsSync)
 assert.ok(browserPath, 'Set BROWSER_PATH to Edge or Chromium')
 const profile = await mkdtemp(join(tmpdir(), 'workday-upgrade-'))
-const browser = spawn(browserPath, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=9342', `--user-data-dir=${profile}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' })
+const browser = spawn(browserPath, [...(process.env.CI ? ['--no-sandbox'] : []), '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check', '--remote-debugging-port=9342', `--user-data-dir=${profile}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' })
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms))
 let socket
 const results = []

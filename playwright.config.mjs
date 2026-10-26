@@ -10,7 +10,7 @@ export default defineConfig({
   timeout: 90_000,
   expect: { timeout: 15_000 },
   outputDir: 'artifacts/webkit-results',
-  reporter: [['list'], ['html', { outputFolder: 'artifacts/webkit-report', open: 'never' }]],
+  reporter: [['list'], ...(process.env.CI ? [['github']] : []), ['html', { outputFolder: 'artifacts/webkit-report', open: 'never' }]],
   use: {
     ...devices['iPhone 13'],
     browserName: 'webkit',
