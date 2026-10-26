@@ -13,7 +13,9 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Add and edit an automatically saved note for the whole workday.
 - Keep completed workdays in persistent, expandable history.
 - Identify completed days with missing journey kilometres directly in History.
-- Edit kilometre values in active and completed workdays.
+- Edit active-day kilometres and correct completed workdays using a draft editor for names, notes, kilometres, and all dates/times.
+- Review before/after timestamp changes and explicitly confirm before saving; other edits save without an extra confirmation.
+- Correct any History timestamp directly using its Edit button, with a focused time/date dialog and saved confirmation.
 - Delete individual completed workdays after confirmation.
 - Export all completed workdays as CSV.
 - Import completed workdays from Options using a CSV exported by an earlier installation; existing history is preserved and duplicates are skipped.

@@ -13,6 +13,7 @@ import {
   reopenWorkday,
   undoLatestTimestamp,
 } from './workday'
+import HistoryEditor from './HistoryEditor'
 import './App.css'
 
 const STORAGE_KEY = 'workday-tracker-current'
@@ -105,15 +106,6 @@ function csvDate(timestamp) {
   return `${year}-${month}-${day}`
 }
 
-function csvTime(timestamp, locale) {
-  if (!timestamp) return ''
-  return new Intl.DateTimeFormat(locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }).format(new Date(timestamp))
-}
-
 function escapeCsv(value) {
   if (value === null || value === undefined) return ''
   const text = String(value)
@@ -174,14 +166,38 @@ function App() {
   })
   const [name, setName] = useState('')
   const [kilometres, setKilometres] = useState('')
+  const [editingDay, setEditingDay] = useState(null)
+  const [editingTimestamp, setEditingTimestamp] = useState(null)
+  const [historySaved, setHistorySaved] = useState(false)
   const [importStatus, setImportStatus] = useState(null)
   const locale = locales[language] ?? locales.en
   const iosDevice = isIosDevice()
   const t = (key, replacements) => translate(language, key, replacements)
 
+  function openHistoryEditor(day, timestamp = null) {
+    setHistorySaved(false)
+    setEditingTimestamp(timestamp)
+    setEditingDay(day)
+  }
+
+  function timestampRow(day, path, value, title) {
+    return <div className="history-timestamp-row">
+      <div><span>{title}</span><strong>{value ? formatTime(value, locale) : t('notRecorded')}</strong></div>
+      <button className="timestamp-edit-button" type="button"
+        aria-label={t('editTimestamp', { event: title })}
+        onClick={() => openHistoryEditor(day, path)}>{t('editValue')}</button>
+    </div>
+  }
+
   useLayoutEffect(() => {
     window.scrollTo(0, 0)
   }, [activeView])
+
+  useEffect(() => {
+    if (!historySaved) return
+    const timer = setTimeout(() => setHistorySaved(false), 5000)
+    return () => clearTimeout(timer)
+  }, [historySaved])
 
   useEffect(() => {
     if (workday) {
@@ -345,15 +361,6 @@ function App() {
     setWorkday((current) => ({ ...current, note: value }))
   }
 
-  function updateHistoryNote(dayId, value) {
-    setHistory((current) => current.map((day) =>
-      day.id === dayId ? { ...day, note: value } : day,
-    ))
-    if (workday?.id === dayId && workday.arrivedHomeAt) {
-      setWorkday((current) => ({ ...current, note: value }))
-    }
-  }
-
   function arriveHome() {
     const completed = { ...workday, arrivedHomeAt: new Date().toISOString() }
     setWorkday(completed)
@@ -452,12 +459,12 @@ function App() {
       return visits.map((visit) => [
         day.id,
         csvDate(day.leftHomeAt),
-        csvTime(day.leftHomeAt, locale),
+        day.leftHomeAt,
         visit?.name ?? '',
-        csvTime(visit?.arrivedAt, locale),
-        csvTime(visit?.leftAt, locale),
+        visit?.arrivedAt ?? '',
+        visit?.leftAt ?? '',
         visit?.kilometres ?? '',
-        csvTime(day.arrivedHomeAt, locale),
+        day.arrivedHomeAt,
         day.kilometresHome ?? '',
         day.note ?? '',
       ])
@@ -941,56 +948,18 @@ function App() {
                   </summary>
 
                   <div className="history-details">
-                    <div className="history-times">
-                      <p><span>{t('leftHome')}</span><strong>{formatTime(day.leftHomeAt, locale)}</strong></p>
-                      <p><span>{t('arrivedHome')}</span><strong>{formatTime(day.arrivedHomeAt, locale)}</strong></p>
-                    </div>
+                    {timestampRow(day, 'leftHomeAt', day.leftHomeAt, t('leftHome'))}
+                    {timestampRow(day, 'arrivedHomeAt', day.arrivedHomeAt, t('arrivedHome'))}
 
-                    <label className="history-note-field">
-                      {t('dayNote')}
-                      <textarea
-                        value={day.note ?? ''}
-                        placeholder={t('dayNotePlaceholder')}
-                        onChange={(event) => updateHistoryNote(day.id, event.target.value)}
-                      />
-                    </label>
-
-                    <div className="history-visits">
-                      {day.visits.map((visit, index) => (
-                        <article className="history-visit" key={visit.id}>
-                          <h3>{index + 1}. {visit.name}</h3>
-                          <div className="history-times">
-                            <p><span>{t('arrived')}</span><strong>{visit.arrivedAt ? formatTime(visit.arrivedAt, locale) : t('notRecorded')}</strong></p>
-                            <p><span>{t('left')}</span><strong>{visit.leftAt ? formatTime(visit.leftAt, locale) : t('notRecorded')}</strong></p>
-                          </div>
-                          <label className="kilometres-field">
-                            {kilometresLegLabel(day.visits, index, t)}
-                            <input
-                              type="number"
-                              inputMode="decimal"
-                              min="0"
-                              step="0.1"
-                              placeholder={t('unknownForNow')}
-                              value={visit.kilometres ?? ''}
-                              onChange={(event) => updateHistoryVisitKilometres(day.id, visit.id, event.target.value)}
-                            />
-                          </label>
-                        </article>
-                      ))}
-                    </div>
-
-                    <label className="kilometres-field">
-                      {homeKilometresLegLabel(day.visits, t)}
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        min="0"
-                        step="0.1"
-                        placeholder={t('unknownForNow')}
-                        value={day.kilometresHome ?? ''}
-                        onChange={(event) => updateHistoryHomeKilometres(day.id, event.target.value)}
-                      />
-                    </label>
+                    <p>{day.note || t('dayNotePlaceholder')}</p>
+                    {day.visits.map((visit, index) => <article className="history-visit" key={visit.id}>
+                      <h3>{index + 1}. {visit.name}</h3>
+                      {timestampRow(day, `visits.${index}.arrivedAt`, visit.arrivedAt, `${visit.name}: ${t('arrived')}`)}
+                      {timestampRow(day, `visits.${index}.leftAt`, visit.leftAt, `${visit.name}: ${t('left')}`)}
+                      <p>{kilometresLegLabel(day.visits, index, t)}: {visit.kilometres ?? '—'} km</p>
+                    </article>)}
+                    <p>{homeKilometresLegLabel(day.visits, t)}: {day.kilometresHome ?? '—'} km</p>
+                    <button className="secondary" onClick={() => openHistoryEditor(day)}>{t('editWorkday')}</button>
                     {latestCompleted?.id === day.id && canReopenWorkday(day, workday, history) && (
                       <button
                         className="reopen-workday-button"
@@ -1119,6 +1088,14 @@ function App() {
         </button>
       </nav>
 
+      {historySaved && <p className="history-save-feedback" role="status">{t('changesSaved')}</p>}
+      {editingDay && <HistoryEditor day={editingDay} target={editingTimestamp} t={t} locale={locale} onClose={() => setEditingDay(null)} onSave={(edited) => {
+        setHistory((current) => current.map((day) => day.id === edited.id ? edited : day)
+          .sort((a, b) => new Date(b.arrivedHomeAt) - new Date(a.arrivedHomeAt)))
+        setWorkday((current) => current?.id === edited.id && current.arrivedHomeAt ? edited : current)
+        setEditingDay(null)
+        setHistorySaved(true)
+      }} />}
       <footer className="app-version">v{packageJson.version}</footer>
     </main>
   )

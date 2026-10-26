@@ -92,7 +92,7 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Confirm each collapsed entry shows its date, leave/arrival times, customer count, and recorded kilometre total when available.
 - [ ] Finish a day with any customer or final-journey kilometre field blank and confirm its collapsed History entry immediately shows “Kilometres incomplete.”
 - [ ] Enter `0` in every journey field and confirm the incomplete warning is not shown.
-- [ ] Fill the missing fields from History and confirm the warning disappears immediately; clear one again and confirm it returns.
+- [ ] Fill the missing fields from History and save the draft and confirm the warning disappears; clear one, save again and confirm it returns.
 - [ ] Expand each entry and confirm all customer names, arrival/departure times, and kilometre fields are present.
 - [ ] Confirm a completed workday with no customers is displayed correctly.
 - [ ] Confirm History date headers remain horizontally aligned when entries are open or closed.
@@ -152,3 +152,27 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Switch the browser to offline mode and reload the installed app or production URL.
 - [ ] Confirm the cached application shell loads.
 - [ ] Record or edit data offline, reload, and confirm localStorage persistence still works.
+
+## History draft editor (v1.6)
+
+- [ ] Open History ? Edit workday on desktop and phone; verify dates/times, customer names, kilometres and note are editable.
+- [ ] Edit names, note and kilometres only; Save changes must save directly without timestamp confirmation.
+- [ ] Change each timestamp type, including clearing an optional customer time; Save changes must show previous and new values, without modifying stored history.
+- [ ] Return from review and edit again; only Confirm and save may persist timestamp changes and the other draft fields together.
+- [ ] Cancel or press Escape with changes; Keep editing retains the draft and Discard changes leaves stored data unchanged.
+- [ ] Enter invalid chronology, blank names and negative kilometres; errors identify fields and prevent saving.
+- [ ] Test zero kilometres, blank kilometres, imported entries, no customers, equal times and overnight/multi-day journeys.
+- [ ] Reload after saving; verify history order, totals, incomplete-distance badges, notes and the matching completed Today entry.
+- [ ] Export and re-import corrected multi-day records into a separate browser profile; verify exact timestamps.
+- [ ] Repeat confirmation and cancellation in Spanish; verify keyboard focus stays in the dialog and returns to Edit workday after closing.
+
+## Quick timestamp correction
+
+- [ ] Finish a day late, open History, and select Edit beside Arrived home. Confirm the dialog shows the workday date, recorded timestamp, time field first, and a separate date field.
+- [ ] Set the correct time and select Review change. Confirm stored data is unchanged until Confirm and save, and that Recorded and Corrected values identify the full dates and times.
+- [ ] Return to editing from review; verify the correction remains. Cancel and discard; verify the original time remains.
+- [ ] Confirm a correction; verify Changes saved appears, history updates, the matching completed Today entry updates, and reloading preserves the correction.
+- [ ] Correct home departure and each customer arrival/departure using their own Edit buttons. Verify other timestamps, customer names, notes and kilometres are preserved exactly.
+- [ ] Enter an arrival home before the last customer departure. Verify the conflict blocks confirmation and explains how to use Edit workday for several corrections.
+- [ ] Correct an overnight date, fill an unrecorded customer timestamp, and clear an optional customer timestamp; verify each change requires confirmation.
+- [ ] Test the focused dialog at phone width and with the keyboard; verify the time field receives focus and all actions remain reachable. Repeat in Spanish.

@@ -55,6 +55,12 @@ function parseLocalTimestamp(date, time, required, notBefore = null) {
   const cleanDate = date.trim()
   const cleanTime = time.trim()
   if (!cleanTime && !required) return null
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(cleanTime)) {
+    const parsed = new Date(cleanTime)
+    if (!Number.isFinite(parsed.getTime()) || parsed.toISOString() !== cleanTime
+      || (notBefore && parsed < notBefore)) throw new Error('invalidTimestamp')
+    return parsed.toISOString()
+  }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(cleanDate) || !/^\d{2}:\d{2}(?::\d{2})?$/.test(cleanTime)) {
     throw new Error('invalidTimestamp')
   }

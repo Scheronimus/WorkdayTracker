@@ -65,15 +65,17 @@ Customer visit:
 }
 ```
 
-Kilometre values may remain `null` and can be edited later. The optional workday note is automatically persisted while typing and remains editable in History. Customer names are not editable after creation. Recorded normal timestamps can only be cleared in reverse sequence, one at a time. Completed days expose a separate constrained reopen operation for their final arrival-home timestamp.
+Kilometre values may remain `null` and can be edited later. The optional workday note is automatically persisted while typing during an active day; completed notes use the History draft editor. Customer names and all recorded dates/times can be corrected in the History draft editor. Recorded normal timestamps can only be cleared in reverse sequence, one at a time. Completed days expose a separate constrained reopen operation for their final arrival-home timestamp.
 
 ## History management
 
-Completing a workday prepends it to history and removes an existing history object with the same workday ID. History cards show the date, times, visit count, and the sum of recorded kilometre values. Expanding a card shows its visits and editable kilometre fields. Deletion uses a browser confirmation dialog and filters only the selected ID from history; the persistence effect saves the result.
+Completing a workday prepends it to history and removes an existing history object with the same workday ID. History cards show the date, times, visit count, and the sum of recorded kilometre values. Expanding a card shows read-only details and an Edit workday button. `HistoryEditor.jsx` keeps a separate draft, validates it through `historyEdit.js`, and saves the entire workday only after timestamp changes have been explicitly confirmed in a before/after review. Names, notes, and distances require no additional confirmation. Cancel discards the draft after a discard prompt. Updates synchronize the matching completed current workday and re-sort history. Deletion uses a browser confirmation dialog and filters only the selected ID from history; the persistence effect saves the result.
 
 ## CSV export
 
-CSV export runs entirely in the browser. It produces one row per customer visit and one row with empty customer fields for a workday without visits. Workday-level fields, including the day note, repeat on every row. Values containing commas, quotes, or line breaks are quoted, and embedded quotes are doubled. Headers and filenames follow the selected language. A `Blob` and temporary object URL trigger the download.
+History also offers a direct Edit button beside every timestamp. The shared editor accepts a target path to show only that timestamp's time and date. `commitTimestampEdit` isolates the selected change, validates journey order, and preserves all unrelated data exactly. A before/after review requires explicit confirmation, and successful saves show a temporary status message. The full workday editor remains available for correcting several values together.
+
+CSV export runs entirely in the browser. It produces one row per customer visit and one row with empty customer fields for a workday without visits. Workday-level fields, including the day note, repeat on every row. Values containing commas, quotes, or line breaks are quoted, and embedded quotes are doubled. Headers and filenames follow the selected language. Timestamp columns now contain full ISO instants so corrected multi-day workdays and milliseconds survive export/import; the importer also accepts legacy time-only values. Older app versions cannot import the new timestamp representation. A `Blob` and temporary object URL trigger the download.
 
 ## PWA support
 
