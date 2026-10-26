@@ -11,6 +11,10 @@ import { pathToFileURL } from 'node:url'
 import { deployment } from '../deployment.config.mjs'
 import { importWorkdaysFromCsv } from '../src/csvImport.js'
 
+process.on('uncaughtExceptionMonitor', (error) => {
+  console.error(`::error::${error.stack.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`)
+})
+
 const baselineRef = process.env.UPGRADE_BASELINE || 'v1.5.0'
 const baselineSha = execFileSync('git', ['rev-parse', `${baselineRef}^{commit}`], { encoding: 'utf8' }).trim()
 const { version } = JSON.parse(await readFile('package.json', 'utf8'))

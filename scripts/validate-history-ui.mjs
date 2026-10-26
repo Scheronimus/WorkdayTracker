@@ -7,6 +7,10 @@ import { join, resolve } from 'node:path'
 import { deployment } from '../deployment.config.mjs'
 import { importWorkdaysFromCsv } from '../src/csvImport.js'
 
+process.on('uncaughtExceptionMonitor', (error) => {
+  console.error(`::error::${error.stack.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`)
+})
+
 // Uses an isolated browser profile with synthetic records; never opens user data.
 const browserPath = process.env.BROWSER_PATH || [
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
