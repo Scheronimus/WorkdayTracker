@@ -1,5 +1,11 @@
 # Manual Regression Checklist
 
+## Production upgrade gate
+
+Run `npm run test:release` before publication. It includes `npm run test:upgrade`, which builds tagged v1.5.0 and updates it to the candidate on the same browser origin through the real service worker. Every pre-existing localStorage value must remain byte-for-byte identical through update, reload, navigation, offline loading and cancellation. Confirmed corrections and actual old/new CSV exports are also checked. Evidence is saved under `artifacts/upgrade-ui/`.
+
+The upgrade fixture matrix covers active visits, travel home, completed/current duplicates, imported string IDs, legacy missing fields, Spanish/English, overnight dates, milliseconds, special characters, and 1,000 workdays. CI blocks deployment if the upgrade or browser suite fails. `npm run test:webkit` additionally runs fourteen WebKit/iPhone-emulation tests; a required macOS job runs them before deployment. Actual installed-iPhone testing still requires a device setup; see [iOS testing](IOS-TESTING.md).
+
 ## Start the app
 
 On Windows, double-click **`Start Workday Tracker.cmd`** in the project folder. It installs dependencies when necessary, starts the server, and opens the correct local URL automatically. Keep its terminal window open during testing and press `Ctrl+C` there when finished.

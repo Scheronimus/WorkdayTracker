@@ -9,6 +9,8 @@
 - Preserve the original value of manually corrected timestamps; show `*` and the original time in History.
 - Show a dismissible, localized “What’s new” notice once per app version, available again from Options.
 - Add automated browser layout, correction, persistence, CSV, and screenshot checks.
+- Gate deployment on a production 1.5.0-to-1.6.0 service-worker upgrade suite that checks exact preservation of existing data, cancelled/confirmed edits, offline reload, and legacy/new CSV transfer.
+- Add WebKit upgrade tests and English/Spanish iPhone-width screenshots, with a required macOS compatibility job before deployment. Real installed-iPhone testing remains separate.
 
 ### Changed
 

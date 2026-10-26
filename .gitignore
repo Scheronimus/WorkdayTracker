@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 artifacts/history-ui/
+artifacts/upgrade-ui/
+artifacts/webkit-*/
 *.local
 
 # Editor directories and files

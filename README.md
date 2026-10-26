@@ -111,9 +111,10 @@ The workflow runs automatically for pushes to `main` and can also be started wit
 4. Runs the automated tests, including deployment-identity consistency checks.
 5. Lints the project.
 6. Builds the application with `npm run build`.
-7. Configures GitHub Pages.
-8. Uploads `dist/` as the Pages artifact.
-9. Deploys the artifact with `actions/deploy-pages` to the `github-pages` environment.
+7. Runs production browser checks and the strict upgrade suite from the tagged 1.5.0 build, including exact preservation of existing stored data.
+8. Retains validation evidence and configures GitHub Pages.
+9. Uploads `dist/` as the Pages artifact.
+10. Requires the separate macOS WebKit/iPhone-emulation upgrade and layout job to pass, then deploys the artifact with `actions/deploy-pages` to the `github-pages` environment.
 
 `deployment.config.mjs` is the source of truth for the repository name, production origin, base path, production URL, and deployment-relative asset paths. Vite, the PWA manifest, and production QR generation consume it directly. The automated tests also confirm that the deployment guidance below remains consistent with it.
 
@@ -129,6 +130,7 @@ npm run generate:production-qr
 
 - [Changelog](CHANGELOG.md)
 - [Version 1.6.0 release notes and verification](docs/RELEASE-1.6.0.md)
+- [Safari and iPhone test coverage](docs/IOS-TESTING.md)
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Testing and regression checklist](docs/TESTING.md)
