@@ -46,7 +46,7 @@ export default function HistoryStatistics({ history, locale, t, onViewDays, onEx
         <div className="stats-axis" aria-hidden="true">{[4, 3, 2, 1, 0].map(step => <span key={step}>{number(ceiling * step / 4)}{step === 4 ? metric === 'time' ? ' h' : ' km' : ''}</span>)}</div>
         <div className="stats-scroll" tabIndex="0" role="region" aria-label={t('statsChart')}>
           <div className={`stats-bars ${period === 'quarter' ? 'stats-wide' : ''}`}>
-            {days.map((day, index) => <button key={day.key} className={`stats-day ${selected.key === day.key ? 'is-selected' : ''}`} aria-label={description(day)} aria-pressed={selected.key === day.key} onKeyDown={event => {
+            {days.map((day, index) => <button key={day.key} className={`stats-day ${selected.key === day.key ? 'is-selected' : ''}`} tabIndex={selected.key === day.key ? 0 : -1} aria-label={description(day)} aria-pressed={selected.key === day.key} onKeyDown={event => {
               if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
               event.preventDefault()
               const target = event.key === 'Home' ? 0 : event.key === 'End' ? days.length - 1 : Math.max(0, Math.min(days.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1)))

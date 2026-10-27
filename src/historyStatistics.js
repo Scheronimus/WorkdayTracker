@@ -3,6 +3,7 @@ import { totalKilometres } from './distance.js'
 import { hasMissingKilometres } from './workday.js'
 
 export function dateKey(value) {
+  if (value === null || value === undefined || value === '') return null
   const date = new Date(value)
   if (!Number.isFinite(date.getTime())) return null
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -42,7 +43,9 @@ export function aggregateHistory(history, start, end) {
       day.unusual ||= durations.workMs + durations.travelMs > 24 * 3600000
     } else day.excluded++
     const km = totalKilometres(record)
-    if (km !== null && Number.isFinite(km) && km >= 0) day.km += km
+    if (km !== null && Number.isFinite(km) && km >= 0) {
+      day.km = totalKilometres({ visits: [{ kilometres: day.km }, { kilometres: km }], kilometresHome: null })
+    }
     if (hasMissingKilometres(record) || !Number.isFinite(km) || km < 0) day.incomplete++
   }
   return days

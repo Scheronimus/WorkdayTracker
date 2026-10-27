@@ -4,6 +4,18 @@ import { aggregateHistory, dateKey, statisticsPeriod, movePeriod } from './histo
 
 const record = (id, start, end, km = 10) => ({ id, leftHomeAt: start, arrivedHomeAt: end, visits: [], kilometresHome: km })
 
+test('missing departure dates never become the Unix epoch date', () => {
+  for (const missing of [null, undefined, '', 'invalid']) assert.equal(dateKey(missing), null)
+})
+
+test('combining decimal workday distances keeps the correct integer axis ceiling', () => {
+  const { start, end } = statisticsPeriod(new Date(2026, 9, 27), 'week')
+  const records = Array.from({ length: 30 }, (_, id) => record(id, '2026-10-27T08:00:00', '2026-10-27T09:00:00', 0.1))
+  const day = aggregateHistory(records, start, end).find(day => day.records.length)
+  assert.equal(day.km, 3)
+  assert.equal(Math.ceil(day.km), 3)
+})
+
 test('periods use local calendar boundaries and Monday weeks', () => {
   const anchor = new Date(2026, 9, 27)
   const week = statisticsPeriod(anchor, 'week')

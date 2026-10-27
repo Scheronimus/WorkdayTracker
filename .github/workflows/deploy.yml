@@ -70,6 +70,9 @@ jobs:
       - name: History work and travel duration checks
         run: npm run test:durations
 
+      - name: History statistics checks
+        run: npm run test:statistics
+
       - name: Production data upgrade checks
         run: npm run test:upgrade
 
@@ -126,6 +129,8 @@ jobs:
         run: npm run test:design -- --webkit
       - name: WebKit History work and travel duration checks
         run: npm run test:durations -- --webkit
+      - name: WebKit History statistics checks
+        run: npm run test:statistics -- --webkit
       - name: Upload WebKit evidence
         if: always()
         uses: actions/upload-artifact@v4

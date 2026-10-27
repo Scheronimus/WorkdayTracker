@@ -19,6 +19,10 @@ workdays filters the list to that date and opens the first entry. Show all workd
 clears the filter. Chart selections survive the switch between statistics and the
 list. The list scroll position is restored by the header toggle. Three-month charts
 scroll horizontally; a daily data table provides an alternative to the chart.
+The chart maximum rounds up to the nearest whole hour or kilometre, with a minimum
+of one. Daily distance aggregation preserves decimal precision so floating-point
+tails cannot inflate this maximum. Chart data is first rendered when statistics
+is opened, and keyboard Tab visits the selected bar while arrow keys navigate days.
 
 Export period CSV uses the existing CSV schema and includes only completed records
 within the displayed date range. List export continues to export the full history.
@@ -37,3 +41,4 @@ Browser checks cover English and Spanish at 320, 390 and 1280 px, 200% text,
 period navigation, totals, metric switching, keyboard selection, daily drilldown,
 filtered exports, empty history, and unchanged saved workday contents. Screenshots
 are written under `artifacts/mobile-ux/statistics-{chromium,webkit}/`.
+Both browser variants are included in `test:release` and CI.

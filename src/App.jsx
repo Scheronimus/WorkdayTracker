@@ -166,6 +166,7 @@ function App() {
   const dockRef = useRef(null)
   const [activeView, setActiveView] = useState('today')
   const [statisticsOpen, setStatisticsOpen] = useState(false)
+  const [statisticsMounted, setStatisticsMounted] = useState(false)
   const [historyDate, setHistoryDate] = useState(null)
   const historyScroll = useRef(0)
   const [language, setLanguage] = useState(readLanguage)
@@ -950,6 +951,7 @@ function App() {
           <div className="section-heading history-heading">
             <button className="history-mode-button secondary" type="button" aria-label={t(statisticsOpen ? 'statsShowList' : 'statsShow')} title={t(statisticsOpen ? 'statsShowList' : 'statsShow')} aria-pressed={statisticsOpen} onClick={() => {
               if (!statisticsOpen) historyScroll.current = window.scrollY
+              setStatisticsMounted(true)
               setStatisticsOpen(!statisticsOpen)
               requestAnimationFrame(() => window.scrollTo(0, statisticsOpen ? historyScroll.current : 0))
             }}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">{statisticsOpen ? <path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1" /> : <path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7M2 20h20" />}</svg></button>
@@ -962,14 +964,14 @@ function App() {
             </p>
           </div>
 
-          <div hidden={!statisticsOpen}><HistoryStatistics history={history} locale={locale} t={t} onExport={exportCsv} onViewDays={key => {
+          <div hidden={!statisticsOpen}>{statisticsMounted && <HistoryStatistics history={history} locale={locale} t={t} onExport={exportCsv} onViewDays={key => {
             setHistoryDate(key)
             setStatisticsOpen(false)
             requestAnimationFrame(() => {
               const card = document.querySelector('.history-list details')
               if (card) { card.open = true; card.querySelector('summary').focus(); card.scrollIntoView({ block: 'start' }) }
             })
-          }} /></div>
+          }} />}</div>
           {historyDate && !statisticsOpen && <button className="secondary stats-filter" onClick={() => setHistoryDate(null)}>{historyDate} · {t('statsShowAll')}</button>}
           <div hidden={statisticsOpen}>
           {history.length > 0 && (

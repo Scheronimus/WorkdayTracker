@@ -2,6 +2,14 @@
 
 ## Mobile design and usability
 
+`npm run test:statistics` (after building; append `-- --webkit` for WebKit) checks
+History statistics in English and Spanish at 320/390/1280px: integer axis maxima,
+time/distance totals, period navigation, keyboard and day-selector interactions,
+daily drilldown, filtered CSV exports, empty history, unchanged stored records,
+and 200% text layout. Both browser variants run in release and CI checks. Unit
+tests cover calendar boundaries, overnight records, invalid times, incomplete
+distances, and exact decimal aggregation across workdays.
+
 `npm run test:durations` (after building; append `-- --webkit` for WebKit) checks work/travel time in collapsed History cards in English/Spanish at 320/390/430px, enlarged text, the invalid-record safeguard, no-customer days, recalculation after confirmed timestamp corrections, and unchanged stored formats. Screenshots are under `artifacts/mobile-ux/durations-chromium/` and `durations-webkit/`. Unit tests additionally cover multiple customers, overnight/multi-day workdays, DST offsets, overlap/order errors, missing times, and zero-duration visits. Durations use full recorded instants and display whole minutes; seconds are not displayed. Both browser variants are part of the release and CI checks.
 
 `npm run test:design` (after building; append `-- --webkit` for WebKit) checks the second UX pass in English/Spanish at 320/390/430px: decimal totals, corrected History editor errors, byte-for-byte preservation of recorded data while formatting/validating, large-text marker containment, and screenshots of Today, History, the editor, and Options. Evidence is under `artifacts/mobile-ux/design-chromium/` and `design-webkit/`. Both variants are included in release and CI checks.
