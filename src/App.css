@@ -45,10 +45,12 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .trip-list { list-style: none; margin: 0; padding: 0 0 0 12px; }
 .trip-list > li { position: relative; margin: 0; padding: 0 0 12px 28px; border-left: 2px solid #d0d2e5; }
 .trip-list > li:last-child { border-left-color: transparent; padding-bottom: 0; }
-.trip-list > li:last-child:not(.trip-origin)::before { position: absolute; content: ''; left: -2px; top: 0; width: 2px; height: 56px; background: #d0d2e5; }
+.trip-list > li:last-child:not(.trip-origin)::before { position: absolute; content: ''; left: -2px; top: 0; bottom: 0; width: 2px; background: #d0d2e5; }
+.trip-list > li:last-child .trip-stop::after { position: absolute; content: ''; left: -30px; top: 16px; bottom: 0; width: 2px; background: var(--canvas); }
+.trip-marker { z-index: 1; }
 .trip-origin { padding-top: 2px; }
 .trip-stop { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: start; column-gap: 8px; }
-.trip-marker { position: absolute; top: 6px; left: -39px; display: grid; place-items: center; width: 20px; height: 20px; border: 3px solid var(--canvas); border-radius: 50%; background: #deddf3; color: var(--accent-strong); font-size: .625rem; font-weight: 700; }
+.trip-marker { position: absolute; top: 6px; left: -39px; display: grid; place-items: center; width: 20px; height: 20px; border: 3px solid var(--canvas); border-radius: 50%; background: #deddf3; color: var(--accent-strong); font-size: clamp(10px, .625rem, 12px); line-height: 1; font-weight: 700; }
 .trip-origin > .trip-marker { left: -11px; width: 18px; height: 18px; top: 4px; box-shadow: inset 0 0 0 4px var(--accent); }
 .trip-marker.done { color: var(--muted); background: var(--canvas); }
 .trip-marker .ui-icon { width: 16px; height: 16px; }

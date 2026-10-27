@@ -2,6 +2,8 @@
 
 ## Mobile design and usability
 
+`npm run test:design` (after building; append `-- --webkit` for WebKit) checks the second UX pass in English/Spanish at 320/390/430px: decimal totals, corrected History editor errors, byte-for-byte preservation of recorded data while formatting/validating, large-text marker containment, and screenshots of Today, History, the editor, and Options. Evidence is under `artifacts/mobile-ux/design-chromium/` and `design-webkit/`. Both variants are included in release and CI checks.
+
 `npm run test:recovery` (after building; append `-- --webkit` for WebKit) checks English/Spanish recovery through the actual UI: cancel/confirm leaving-home and departure Undo, Undo after adding a later customer, reopen and re-complete a day, preserve notes and home-journey state across reload, export then restore CSV into a fresh isolated context, cancel import, skip duplicates, preserve history when preparing another day, and cancel/confirm deletion. It also verifies imported days cannot be reopened as local workdays. Evidence is under `artifacts/mobile-ux/recovery-chromium/` and `recovery-webkit/`. Both variants are included in release and CI checks.
 
 `npm run test:route` (after building) verifies the compact route and customer/distance editor in English/Spanish at 320/390/430px. Append `-- --webkit` for WebKit. It covers Save/Cancel/Escape, validation and corrected errors, first-invalid-field focus, zero versus missing distances, renamed journey labels, timestamp preservation, and final Home visibility only after departure home. Screenshots are under `artifacts/mobile-ux/route-chromium/` and `route-webkit/`. Both variants are part of release and CI checks.

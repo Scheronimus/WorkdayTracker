@@ -18,6 +18,14 @@ export default function HistoryEditor({ day, target, t, locale, onSave, onClose 
   }
   function update(field, value, index) {
     setReview(null)
+    // Revalidate an already-submitted draft so cross-field time conflicts and
+    // corrected field messages stay in sync, without saving any values.
+    if (Object.keys(errors).length) {
+      const next = index == null ? { ...draft, [field]: value } : {
+        ...draft, visits: draft.visits.map((visit, i) => i === index ? { ...visit, [field]: value } : visit),
+      }
+      setErrors((target ? commitTimestampEdit(day, next, target) : commitHistoryEdit(day, next)).errors)
+    }
     setDraft((current) => index == null ? { ...current, [field]: value } : {
       ...current, visits: current.visits.map((visit, i) => i === index ? { ...visit, [field]: value } : visit),
     })

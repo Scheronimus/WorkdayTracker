@@ -15,9 +15,10 @@
     "test:ux": "node scripts/validate-mobile-ux.mjs",
     "test:route": "node scripts/validate-route-ui.mjs",
     "test:recovery": "node scripts/validate-recovery-ui.mjs",
+    "test:design": "node scripts/validate-design-ui.mjs",
     "test:upgrade": "node scripts/validate-upgrade.mjs",
     "test:webkit": "playwright test",
-    "test:release": "npm test && npm run lint && npm run build && npm run test:ui -- --production && npm run test:ux -- --production && npm run test:route && npm run test:upgrade && npm run test:webkit && npm run test:ux -- --production --webkit && npm run test:route -- --webkit && npm run test:recovery && npm run test:recovery -- --webkit",
+    "test:release": "npm test && npm run lint && npm run build && npm run test:ui -- --production && npm run test:ux -- --production && npm run test:route && npm run test:upgrade && npm run test:webkit && npm run test:ux -- --production --webkit && npm run test:route -- --webkit && npm run test:recovery && npm run test:recovery -- --webkit && npm run test:design && npm run test:design -- --webkit",
     "preview": "vite preview"
   },
   "dependencies": {

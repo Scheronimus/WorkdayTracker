@@ -17,6 +17,9 @@
 
 ### Fixed
 
+- Display decimal journey totals without binary floating-point tails, preserving recorded leg values and entered precision.
+- Refresh History editor validation after a field changes so corrected values do not retain obsolete errors.
+- Keep route numbers inside their markers and connect the final stop correctly with enlarged text and wrapped leg labels.
 - Keep sheet keyboard focus inside native modal dialogs, make the background inert, support Escape, and restore focus when closing.
 - Adapt dialogs to the visible phone viewport and measure action/navigation clearance, including enlarged text.
 - Give the CSV chooser a 48-pixel target and visible keyboard focus; label the note field explicitly.

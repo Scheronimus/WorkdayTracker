@@ -19,6 +19,7 @@ import Sheet from './Sheet'
 import Icon from './Icon'
 import RouteTimeline from './RouteTimeline'
 import StopEditor from './StopEditor'
+import { totalKilometres } from './distance'
 import { markReleaseNotesSeen, shouldShowReleaseNotes } from './releaseNotes.js'
 import './App.css'
 
@@ -87,15 +88,6 @@ function formatDuration(start, end) {
   if (!start) return '0h 00m'
   const minutes = Math.max(0, Math.floor((new Date(end) - new Date(start)) / 60000))
   return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`
-}
-
-function totalKilometres(day) {
-  const values = [
-    ...day.visits.map((visit) => visit.kilometres),
-    day.kilometresHome,
-  ].filter((value) => value !== null && value !== undefined && value !== '')
-
-  return values.length ? values.reduce((total, value) => total + Number(value), 0) : null
 }
 
 function kilometresLegLabel(visits, index, t) {
