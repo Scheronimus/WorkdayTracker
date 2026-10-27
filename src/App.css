@@ -53,6 +53,8 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .trip-marker.done { color: var(--muted); background: var(--canvas); }
 .trip-marker .ui-icon { width: 16px; height: 16px; }
 .trip-stop.is-current .trip-marker { background: var(--accent); color: white; }
+.trip-marker.reached { background: #166534; color: white; }
+.trip-marker.reached .ui-icon { width: 14px; height: 14px; stroke-width: 2.2; }
 .trip-stop-content { display: grid; min-width: 0; gap: 3px; }
 .trip-stop-content > strong { overflow-wrap: anywhere; font-size: 1rem; }
 .trip-times { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: .875rem; min-height: 22px; }

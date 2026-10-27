@@ -41,7 +41,7 @@ export default function RouteTimeline({ day, currentVisit, undoable, t, formatTi
       })}
       {(day.homeJourneyStarted || day.arrivedHomeAt) && <li>
         {leg(day.kilometresHome, day.visits.at(-1)?.name ?? t('homeLower'), t('homeLower'), null)}
-        <div className={`trip-stop${day.arrivedHomeAt ? '' : ' is-current'}`}><span className="trip-marker" aria-hidden="true" /><div className="trip-stop-content"><strong>{t('home')}</strong>{renderTimestamp
+        <div className={`trip-stop${day.arrivedHomeAt ? '' : ' is-current'}`}><span className={`trip-marker${day.arrivedHomeAt ? ' reached' : ''}`} aria-hidden="true">{day.arrivedHomeAt && <Icon name="check" />}</span><div className="trip-stop-content"><strong>{t('home')}</strong>{renderTimestamp
           ? renderTimestamp('arrivedHomeAt', day.arrivedHomeAt, t('arrivedHome'))
           : <span className="trip-state">{t('travellingHome')}</span>}</div></div>
       </li>}

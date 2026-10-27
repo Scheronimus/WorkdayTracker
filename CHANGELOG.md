@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Mark recorded arrival home with a green completion check, distinct from an in-progress journey home.
 - Use the shared chronological trip timeline in expanded History, including the recorded arrival home. Customer/distance pencils support draft editing while timestamp pencils preserve correction review, original values, and manual-change markers.
 - Replace Today’s route cards with a compact chronological timeline, with editable kilometre legs and an explicit missing-distance state. Show the return-home stop only after the home journey starts.
 - Add a draft stop editor for customer names and incoming kilometres, with Save/Cancel and English/Spanish validation. Existing timestamps and original correction metadata are preserved.
