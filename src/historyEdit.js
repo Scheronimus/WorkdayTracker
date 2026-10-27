@@ -14,6 +14,20 @@ export function createHistoryDraft(day) {
   }
 }
 
+export function historyDraftHasChanges(original, draft) {
+  // Native datetime inputs may omit zero seconds. Compare representations
+  // without parsing dates, so invalid edits still require a discard decision.
+  const seconds = value => typeof value === 'string'
+    ? value.replace(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})$/, '$1:00') : value
+  const normalized = {
+    ...draft,
+    leftHomeAt: seconds(draft.leftHomeAt),
+    arrivedHomeAt: seconds(draft.arrivedHomeAt),
+    visits: draft.visits.map(visit => ({ ...visit, arrivedAt: seconds(visit.arrivedAt), leftAt: seconds(visit.leftAt) })),
+  }
+  return JSON.stringify(normalized) !== JSON.stringify(createHistoryDraft(original))
+}
+
 export function prepareHistoryEdit(original, draft) {
   const errors = {}
   const changes = []

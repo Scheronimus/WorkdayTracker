@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { commitHistoryEdit, commitTimestampEdit, createHistoryDraft, localDateTime } from './historyEdit.js'
+import { commitHistoryEdit, commitTimestampEdit, createHistoryDraft, historyDraftHasChanges, localDateTime } from './historyEdit.js'
 import { importWorkdaysFromCsv } from './csvImport.js'
 
 const original = {
@@ -15,6 +15,34 @@ test('draft and cancelled edits never mutate original data', () => {
   draft.visits[0].name = 'Changed'
   draft.note = 'Changed'
   assert.deepEqual(original, before)
+})
+
+test('native omission of zero seconds does not create unsaved timestamp changes', () => {
+  const before = structuredClone(original)
+  const draft = createHistoryDraft(original)
+  draft.leftHomeAt = draft.leftHomeAt.replace(/:00$/, '')
+  draft.arrivedHomeAt = draft.arrivedHomeAt.replace(/:00$/, '')
+  for (const visit of draft.visits) {
+    visit.arrivedAt = visit.arrivedAt.replace(/:00$/, '')
+    visit.leftAt = visit.leftAt.replace(/:00$/, '')
+  }
+  assert.equal(historyDraftHasChanges(original, draft), false)
+  assert.deepEqual(original, before, 'Original instants and milliseconds remain untouched')
+})
+
+test('actual timestamp, invalid-field and non-time edits still require a discard decision', () => {
+  for (const change of [
+    draft => { draft.leftHomeAt = '' },
+    draft => { draft.leftHomeAt = 'invalid' },
+    draft => { draft.visits[0].leftAt = draft.visits[0].leftAt.replace(/:00$/, ':01') },
+    draft => { draft.note = 'changed' },
+    draft => { draft.visits[0].name = 'changed' },
+    draft => { draft.kilometresHome = 0 },
+  ]) {
+    const draft = createHistoryDraft(original)
+    change(draft)
+    assert.equal(historyDraftHasChanges(original, draft), true)
+  }
 })
 
 test('names, notes and kilometres save without timestamp confirmation and preserve exact instants and IDs', () => {

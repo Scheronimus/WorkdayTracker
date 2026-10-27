@@ -25,7 +25,9 @@ try {
   for (const language of ['en', 'es']) for (const width of [320, 390, 430]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, isMobile: true, timezoneId: 'Europe/Berlin', reducedMotion: 'reduce' })
     await context.addInitScript(({ language, releaseVersion }) => {
-      const time = minutes => new Date(Date.now() - minutes * 60000).toISOString()
+      const clock = new Date()
+      clock.setSeconds(0, 0)
+      const time = minutes => new Date(clock.getTime() - minutes * 60000).toISOString()
       const day = { id: 23, leftHomeAt: time(120), arrivedHomeAt: null, homeJourneyStarted: false, kilometresHome: null, note: '',
         visits: [{ id: 1, name: 'Oficina Norte', kilometres: 0.1, arrivedAt: time(100), leftAt: time(80) },
           { id: 2, name: 'Centro de mantenimiento del cliente', kilometres: 0.2, arrivedAt: time(60), leftAt: null }] }
@@ -72,11 +74,13 @@ try {
     await first.fill('')
     await button('saveChanges').click()
     await page.locator('.history-editor [aria-invalid=true]').first().waitFor()
-    await first.fill(original)
+    // The fixture has zero seconds; restore the minute-only native value.
+    await first.fill(original.slice(0, 16))
     assert.equal(await page.locator('.history-editor .editor-error').count(), 0, 'Corrected field removes obsolete errors')
     assert.equal(await first.getAttribute('aria-invalid'), 'false')
     await capture('editor')
     await button('cancelEdit').click()
+    await page.locator('.history-editor').waitFor({ state: 'detached' })
     assert.equal(await page.evaluate(() => localStorage.getItem('workday-tracker-history')), history, 'Validation and cancellation preserve exact history')
     assert.equal(await page.evaluate(() => localStorage.getItem('workday-tracker-current')), current, 'Formatting leaves original distances unchanged')
     await button('options').click()

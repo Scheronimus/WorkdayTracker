@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { commitHistoryEdit, commitTimestampEdit, createHistoryDraft } from './historyEdit'
+import { commitHistoryEdit, commitTimestampEdit, createHistoryDraft, historyDraftHasChanges } from './historyEdit'
 import useModalDialog from './useModalDialog'
 
 export default function HistoryEditor({ day, target, t, locale, onSave, onClose }) {
@@ -13,7 +13,7 @@ export default function HistoryEditor({ day, target, t, locale, onSave, onClose 
     dialog.current.querySelector('[data-primary-focus]')?.focus()
   }, [review, discard])
   function close() {
-    if (JSON.stringify(draft) !== JSON.stringify(createHistoryDraft(day))) setDiscard(true)
+    if (historyDraftHasChanges(day, draft)) setDiscard(true)
     else onClose()
   }
   function update(field, value, index) {

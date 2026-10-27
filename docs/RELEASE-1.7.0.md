@@ -48,7 +48,7 @@ Validated locally on 27 October 2026 with candidate version 1.7.0:
 
 | Check | Result |
 | --- | --- |
-| Unit and documentation tests | 60 passed, including Markdown links and package/lockfile/release-document consistency |
+| Unit and documentation tests | 62 passed, including Markdown links, package/lockfile/release-document consistency and unchanged timestamp precision |
 | Lint and production build | Passed |
 | Full `npm run test:release` | Passed: production History/offline, recording, route editing, recovery, display, durations and statistics in Chromium and WebKit |
 | Previous-release upgrades | All six Chromium scenarios from tagged 1.6.0 passed; all fourteen WebKit upgrade/iPhone-layout tests passed |
@@ -59,6 +59,10 @@ Pre-publication macOS CI caught reverse keyboard navigation leaving the note
 dialog. The shared modal handler now manages every Tab/Shift+Tab step explicitly;
 the usability suite checks movement between the note field and close control.
 Production publication waits for the corrected commit's CI to pass.
+The macOS display suite also exposed a false unsaved-change prompt when native
+inputs omitted zero seconds. Draft comparison now normalizes that representation
+without changing recorded instants or suppressing confirmation for actual edits;
+unit and browser checks cover the zero-second case explicitly.
 
 Upgrade checks preserve every pre-existing stored value through update, reload,
 offline/cached loading and cancellation; the scenarios include 1,000 completed
