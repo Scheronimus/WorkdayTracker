@@ -27,6 +27,7 @@ No changes yet.
 
 ### Fixed
 
+- Keep every Tab and Shift+Tab step inside open dialogs on macOS WebKit, including reverse navigation from the note field to its close control.
 - Round chart maxima up to the next integer and preserve exact daily decimal distance totals so floating-point tails do not inflate the axis.
 - Defer chart rendering until Statistics is opened, preserving History feedback and avoiding unused chart work.
 - Display decimal journey totals without binary floating-point tails, preserving recorded leg values and entered precision.

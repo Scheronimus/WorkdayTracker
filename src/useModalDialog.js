@@ -16,15 +16,13 @@ export default function useModalDialog(ref) {
       if (event.key !== 'Tab') return
       const controls = [...dialog.querySelectorAll('button, input, textarea, select, summary, [href], [tabindex]')]
         .filter((element) => !element.disabled && element.tabIndex >= 0 && element.getClientRects().length)
-      const first = controls[0]
-      const last = controls.at(-1)
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault()
-        last.focus()
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault()
-        first.focus()
-      }
+      // Handle every Tab step, not just the boundaries: native keyboard
+      // navigation on macOS can skip buttons and move focus to browser chrome.
+      event.preventDefault()
+      const current = controls.indexOf(document.activeElement)
+      const next = current < 0 ? (event.shiftKey ? controls.length - 1 : 0)
+        : (current + (event.shiftKey ? -1 : 1) + controls.length) % controls.length
+      ;(controls[next] ?? dialog).focus()
     }
     updateViewport()
     dialog.showModal()

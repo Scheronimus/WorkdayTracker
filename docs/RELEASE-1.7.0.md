@@ -55,6 +55,11 @@ Validated locally on 27 October 2026 with candidate version 1.7.0:
 | Legacy upgrades | All six additional Chromium scenarios from tagged 1.5.0 passed |
 | Release notice | Current English/Spanish copy, persistence and reappearance after dismissing the previous version passed |
 
+Pre-publication macOS CI caught reverse keyboard navigation leaving the note
+dialog. The shared modal handler now manages every Tab/Shift+Tab step explicitly;
+the usability suite checks movement between the note field and close control.
+Production publication waits for the corrected commit's CI to pass.
+
 Upgrade checks preserve every pre-existing stored value through update, reload,
 offline/cached loading and cancellation; the scenarios include 1,000 completed
 days. Legacy 1.5.0 WebKit was not rerun for this candidate; the candidate WebKit
