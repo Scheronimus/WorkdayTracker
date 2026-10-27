@@ -209,7 +209,7 @@ function App() {
 
   function timestampRow(day, path, value, title, editTitle = title) {
     const correction = day.timestampCorrections?.[path]
-    return <div className="history-timestamp-row">
+    return <div className="history-timestamp-row" data-timestamp-path={path}>
       <div><span>{title}</span><strong>{value ? formatHistoryTime(value, day, locale) : t('notRecorded')}{timestampStar(day, path)}</strong>
         {correction && <small className="original-timestamp">{t('originalTime')}: {correction.original ? formatHistoryTime(correction.original, day, locale) : t('notRecorded')}</small>}
       </div>
@@ -596,17 +596,24 @@ function App() {
     setIsCustomerSheetOpen(true)
   }
 
-  function openStopEditor(id, focusDistance, event) {
+  function openStopEditor(id, focusDistance, event, dayId) {
     event.currentTarget.focus({ preventScroll: true })
-    setEditingRoute({ id, focusDistance })
+    setEditingRoute({ id, focusDistance, dayId })
   }
 
   function saveRouteStop(values) {
-    setWorkday(current => editingRoute.id == null ? { ...current, kilometresHome: values.kilometres } : {
-      ...current, visits: current.visits.map(visit => visit.id === editingRoute.id ? { ...visit, ...values } : visit),
-    })
+    const edit = day => editingRoute.id == null ? { ...day, kilometresHome: values.kilometres } : {
+      ...day, visits: day.visits.map(visit => visit.id === editingRoute.id ? { ...visit, ...values } : visit),
+    }
+    if (editingRoute.dayId != null) {
+      setHistory(current => current.map(day => day.id === editingRoute.dayId ? edit(day) : day))
+      setWorkday(current => current?.id === editingRoute.dayId && current.arrivedHomeAt ? edit(current) : current)
+      setHistorySaved(true)
+    } else setWorkday(edit)
     setEditingRoute(null)
   }
+
+  const routeEditDay = editingRoute?.dayId != null ? history.find(day => day.id === editingRoute.dayId) : workday
 
   async function installApp() {
     if (!installPrompt) return
@@ -794,14 +801,6 @@ function App() {
             </div>
           )}
 
-          {editingRoute && workday?.leftHomeAt && !workday.arrivedHomeAt && (
-            <StopEditor visit={workday.visits.find(visit => visit.id === editingRoute.id) ?? null}
-              kilometresHome={workday.kilometresHome} focusDistance={editingRoute.focusDistance} t={t}
-              from={editingRoute.id == null ? workday.visits.at(-1)?.name ?? t('homeLower')
-                : workday.visits[workday.visits.findIndex(visit => visit.id === editingRoute.id) - 1]?.name ?? t('homeLower')}
-              onClose={() => setEditingRoute(null)} onSave={saveRouteStop} />
-          )}
-
           {isCustomerSheetOpen && canAddCustomer && (
             <Sheet titleId="customer-sheet-title" onClose={() => setIsCustomerSheetOpen(false)}>
                 <div className="sheet-heading">
@@ -978,18 +977,12 @@ function App() {
                   </summary>
 
                   <div className="history-details">
-                    {timestampRow(day, 'leftHomeAt', day.leftHomeAt, t('leftHome'))}
-                    {timestampRow(day, 'arrivedHomeAt', day.arrivedHomeAt, t('arrivedHome'))}
+                    <RouteTimeline day={day} t={t} formatTime={value => formatHistoryTime(value, day, locale)}
+                      formatDistance={formatKilometres} star={path => timestampStar(day, path)}
+                      renderTimestamp={(path, value, label, editLabel) => timestampRow(day, path, value, label, editLabel)}
+                      onEdit={(id, focusDistance, event) => openStopEditor(id, focusDistance, event, day.id)} />
                     {Object.keys(day.timestampCorrections ?? {}).length > 0 && <small className="original-timestamp">* {t('manuallyChanged')}</small>}
-
                     {day.note?.trim() && <div className="history-day-note"><h3>{t('dayNote')}</h3><p>{day.note}</p></div>}
-                    {day.visits.map((visit, index) => <article className="history-visit" key={visit.id}>
-                      <h3>{index + 1}. {visit.name}</h3>
-                      {timestampRow(day, `visits.${index}.arrivedAt`, visit.arrivedAt, t('arrived'), `${visit.name}: ${t('arrived')}`)}
-                      {timestampRow(day, `visits.${index}.leftAt`, visit.leftAt, t('left'), `${visit.name}: ${t('left')}`)}
-                      <p className="history-distance"><span>{index === 0 ? t('home') : day.visits[index - 1].name} → {visit.name}</span><strong>{formatKilometres(visit.kilometres)} km</strong></p>
-                    </article>)}
-                    <p className="history-distance"><span>{day.visits.at(-1)?.name ?? t('home')} → {t('home')}</span><strong>{formatKilometres(day.kilometresHome)} km</strong></p>
                     <button className="secondary" onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); openHistoryEditor(day) }}>{t('editWorkday')}</button>
                     {latestCompleted?.id === day.id && canReopenWorkday(day, workday, history) && (
                       <button
@@ -1128,6 +1121,13 @@ function App() {
         </button>
       </nav>
 
+      {editingRoute && routeEditDay && (
+        <StopEditor visit={routeEditDay.visits.find(visit => visit.id === editingRoute.id) ?? null}
+          kilometresHome={routeEditDay.kilometresHome} focusDistance={editingRoute.focusDistance} t={t}
+          from={editingRoute.id == null ? routeEditDay.visits.at(-1)?.name ?? t('homeLower')
+            : routeEditDay.visits[routeEditDay.visits.findIndex(visit => visit.id === editingRoute.id) - 1]?.name ?? t('homeLower')}
+          onClose={() => setEditingRoute(null)} onSave={saveRouteStop} />
+      )}
       {historySaved && <p className="history-save-feedback" role="status">{t('changesSaved')}</p>}
       {editingDay && <HistoryEditor day={editingDay} target={editingTimestamp} t={t} locale={locale} onClose={() => setEditingDay(null)} onSave={(edited) => {
         setHistory((current) => current.map((day) => day.id === edited.id ? edited : day)

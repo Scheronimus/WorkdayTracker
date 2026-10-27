@@ -67,6 +67,9 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .trip-leg.missing { color: var(--accent); }
 .trip-leg:hover, .trip-leg:focus-visible { color: var(--accent); }
 .stop-editor-actions { display: flex; gap: 12px; margin-top: 8px; }
+.history-details .trip-stop { grid-template-columns: minmax(0, 1fr); }
+.history-details .trip-stop-content > strong { padding-right: 44px; }
+.history-details .trip-stop > .trip-edit { position: absolute; right: 0; top: 0; }
 .current-stop { margin-bottom: 24px; }
 .current-stop .route-stop { margin-left: 0; }
 .current-stop .route-stop::before { display: none; }

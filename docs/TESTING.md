@@ -4,6 +4,8 @@
 
 `npm run test:route` (after building) verifies the compact route and customer/distance editor in English/Spanish at 320/390/430px. Append `-- --webkit` for WebKit. It covers Save/Cancel/Escape, validation and corrected errors, first-invalid-field focus, zero versus missing distances, renamed journey labels, timestamp preservation, and final Home visibility only after departure home. Screenshots are under `artifacts/mobile-ux/route-chromium/` and `route-webkit/`. Both variants are part of release and CI checks.
 
+The route suite also opens the completed workday in History, checks the same chronological timeline and all timestamp pencils, cancels and saves customer edits, verifies the matching completed Today record stays synchronized, and checks cancellation of timestamp correction. History screenshots use the `-history.png` suffix. Imported completed days show the recorded final Home even when older records do not have a home-journey flag.
+
 Run `npm run test:ux` for development or `npm run test:ux -- --production` after building. Set `BROWSER_PATH` if Chromium/Edge is not automatically detected. Run `npm run test:ux -- --production --webkit` with Playwright WebKit installed to check the same flows in WebKit. Both are included in `test:release` and CI.
 
 The suite uses isolated synthetic records in English and Spanish at 320, 390, and 430 pixels. It checks a complete workday, timestamp undo, all sheets, Tab/Shift+Tab containment, Escape and focus restoration, 200% text, a shorter keyboard-sized viewport, overnight dates/originals, correction review, draft discard, CSV export, file-picker focus/target size, language and reload persistence. Screenshots are saved in `artifacts/mobile-ux/`.

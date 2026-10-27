@@ -158,7 +158,7 @@ try {
     const corrected = new Date(new Date(oldTimestamp).getTime() + 15 * 60000)
     corrected.setMilliseconds(0)
     const correctedIso = corrected.toISOString()
-    await evaluate("document.querySelectorAll('.history-timestamp-row .timestamp-edit-button')[1].click()")
+    await evaluate("document.querySelector('[data-timestamp-path=arrivedHomeAt] .timestamp-edit-button').click()")
     await delay()
     const inputValues = await evaluate(`(() => { const d = new Date(${JSON.stringify(correctedIso)}); const p = n => String(n).padStart(2, '0');
       return {date: d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()), time:p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())}; })()`)

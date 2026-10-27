@@ -73,10 +73,10 @@ for (const scenario of upgradeScenarios()) {
     await page.getByRole('button', { name: text(scenario.language, 'History', 'Historial'), exact: true }).click()
     const card = page.locator('.history-card').first()
     await card.locator('summary').click()
-    await card.locator('.timestamp-edit-button').nth(1).click()
+    await card.locator('[data-timestamp-path=arrivedHomeAt] .timestamp-edit-button').click()
     await page.getByRole('button', { name: text(scenario.language, 'Cancel', 'Cancelar'), exact: true }).click()
     expect(await snapshot(page)).toEqual(before)
-    await card.locator('.timestamp-edit-button').nth(1).click()
+    await card.locator('[data-timestamp-path=arrivedHomeAt] .timestamp-edit-button').click()
     const oldTime = expected[0].arrivedHomeAt
     const corrected = new Date(new Date(oldTime).getTime() + 15 * 60000)
     corrected.setMilliseconds(0)
@@ -161,7 +161,7 @@ for (const language of ['en', 'es']) {
       expect(rows.length).toBeGreaterThanOrEqual(2)
       for (const row of rows) { expect(row.textWidth).toBeGreaterThan(140); expect(row.buttonWidth).toBe(44); expect(row.height).toBeLessThan(110) }
       await page.screenshot({ path: testInfo.outputPath('history.png'), fullPage: true })
-      await page.locator('.history-card').first().locator('.timestamp-edit-button').nth(1).click()
+      await page.locator('.history-card').first().locator('[data-timestamp-path=arrivedHomeAt] .timestamp-edit-button').click()
       await expect(page.locator('dialog input[type=time]')).toBeFocused()
       const dialog = await page.locator('dialog').boundingBox()
       expect(dialog.width).toBeLessThanOrEqual(width)
