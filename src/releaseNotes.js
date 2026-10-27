@@ -8,4 +8,4 @@ export function markReleaseNotesSeen(version, storage = localStorage) {
   try { storage.setItem(LAST_SEEN_RELEASE_KEY, version) } catch { /* Dismiss for this session if storage is unavailable. */ }
 }
 
-export const releaseNoteKeys = ['releaseEdit', 'releaseConfirm', 'releaseOriginals', 'releaseTransfer']
+export const releaseNoteKeys = ['releaseStatistics', 'releaseDurations', 'releaseRoute', 'releaseTransfer']

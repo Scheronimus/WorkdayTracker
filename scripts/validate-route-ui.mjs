@@ -1,3 +1,4 @@
+import { releaseVersion } from './release-version.mjs'
 /* global document, window */
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -24,17 +25,17 @@ try {
   for (const language of ['en', 'es']) for (const width of [320, 390, 430]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, isMobile: true, deviceScaleFactor: 1,
       timezoneId: 'Europe/Berlin', reducedMotion: 'reduce' })
-    await context.addInitScript(language => {
+    await context.addInitScript(({ language, releaseVersion }) => {
       const now = Date.now()
       const time = minutes => new Date(now - minutes * 60000).toISOString()
       localStorage.setItem('workday-tracker-language', JSON.stringify(language))
-      localStorage.setItem('workday-tracker-last-seen-release', '1.6.0')
+      localStorage.setItem('workday-tracker-last-seen-release', releaseVersion)
       localStorage.setItem('workday-tracker-current', JSON.stringify({ id: 42, leftHomeAt: time(120), arrivedHomeAt: null,
         homeJourneyStarted: false, kilometresHome: null, note: '', visits: [12.5, 0, null, 8.2].map((kilometres, index) => ({
           id: index + 1, name: `${language === 'es' ? 'cliente' : 'Customer '}${index + 1}`, kilometres,
           arrivedAt: time(100 - index * 20), leftAt: time(90 - index * 20),
         })) }))
-    }, language)
+    }, { language, releaseVersion })
     const page = await context.newPage()
     const errors = []
     page.on('pageerror', error => errors.push(error.message))

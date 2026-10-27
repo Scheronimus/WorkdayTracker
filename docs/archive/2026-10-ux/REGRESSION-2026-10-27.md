@@ -1,3 +1,5 @@
+> Historical review from October 2026. Findings and test counts describe that revision, not the current release. See the [current documentation](../../README.md). Screenshot links refer to generated local artifacts.
+
 # Feature regression audit — 27 October 2026
 
 Branch: `feature/mobile-ux-polish`. Application revision checked: `350205e`.

@@ -1,3 +1,5 @@
+> Historical review from October 2026. Findings and test counts describe that revision, not the current release. See the [current documentation](../../README.md). Screenshot links refer to generated local artifacts.
+
 # Second UI/UX pass — 27 October 2026
 
 ## Assessment
@@ -32,11 +34,11 @@ The new design suite checks decimal totals, error recovery, unchanged stored rec
 
 Screenshots:
 
-- [Today, Spanish, 320px](../artifacts/mobile-ux/design-chromium/es-320-today.png)
-- [History, Spanish, 390px](../artifacts/mobile-ux/design-chromium/es-390-history.png)
-- [Full editor, Spanish, 390px](../artifacts/mobile-ux/design-chromium/es-390-editor.png)
-- [Options, Spanish, 390px](../artifacts/mobile-ux/design-chromium/es-390-options.png)
-- [Enlarged-text route, Spanish, 320px](../artifacts/mobile-ux/design-chromium/es-320-route-large-text.png)
+- [Today, Spanish, 320px](../../../artifacts/mobile-ux/design-chromium/es-320-today.png)
+- [History, Spanish, 390px](../../../artifacts/mobile-ux/design-chromium/es-390-history.png)
+- [Full editor, Spanish, 390px](../../../artifacts/mobile-ux/design-chromium/es-390-editor.png)
+- [Options, Spanish, 390px](../../../artifacts/mobile-ux/design-chromium/es-390-options.png)
+- [Enlarged-text route, Spanish, 320px](../../../artifacts/mobile-ux/design-chromium/es-320-route-large-text.png)
 
 ## Remaining device review
 

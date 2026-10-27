@@ -1,3 +1,4 @@
+import { releaseVersion } from './release-version.mjs'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -25,12 +26,12 @@ try {
   async function isolated(language) {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true,
       timezoneId: 'Europe/Berlin', reducedMotion: 'reduce' })
-    await context.addInitScript(language => {
+    await context.addInitScript(({ language, releaseVersion }) => {
       if (sessionStorage.getItem('recovery-seeded')) return
       localStorage.setItem('workday-tracker-language', JSON.stringify(language))
-      localStorage.setItem('workday-tracker-last-seen-release', '1.6.0')
+      localStorage.setItem('workday-tracker-last-seen-release', releaseVersion)
       sessionStorage.setItem('recovery-seeded', 'true')
-    }, language)
+    }, { language, releaseVersion })
     const page = await context.newPage()
     await page.goto(url)
     await page.locator('.bottom-nav').waitFor()

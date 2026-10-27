@@ -1,3 +1,4 @@
+import { releaseVersion } from './release-version.mjs'
 /* global document */
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -28,11 +29,11 @@ try {
   for (const language of ['en', 'es']) for (const width of [320, 390, 430]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, isMobile: true,
       timezoneId: 'Europe/Berlin', reducedMotion: 'reduce' })
-    await context.addInitScript(({ language, records }) => {
+    await context.addInitScript(({ language, records, releaseVersion }) => {
       localStorage.setItem('workday-tracker-language', JSON.stringify(language))
-      localStorage.setItem('workday-tracker-last-seen-release', '1.6.0')
+      localStorage.setItem('workday-tracker-last-seen-release', releaseVersion)
       localStorage.setItem('workday-tracker-history', JSON.stringify(records))
-    }, { language, records: [valid, incomplete, empty] })
+    }, { language, records: [valid, incomplete, empty], releaseVersion })
     const page = await context.newPage()
     const errors = []
     page.on('pageerror', error => errors.push(error.message))

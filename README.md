@@ -11,7 +11,8 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Record optional kilometres between stops and before starting the final journey home.
 - Review and correct the final-journey kilometres when recording arrival home.
 - Add and edit an automatically saved note for the whole workday.
-- Keep completed workdays in persistent, expandable history.
+- Keep completed workdays in persistent, expandable history with work/travel duration summaries.
+- Switch History to daily time or kilometre charts for a week, month, or three months; inspect a date and open its workdays.
 - Identify completed days with missing journey kilometres directly in History.
 - Edit active-day kilometres and correct completed workdays using a draft editor for names, notes, kilometres, and all dates/times.
 - Review before/after timestamp changes and explicitly confirm before saving; other edits save without an extra confirmation.
@@ -19,7 +20,7 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Manually corrected timestamps show `*` and retain their original recorded value, including through CSV export/import.
 - See concise English/Spanish “What’s new” notes once per version, or read them again from Options.
 - Delete individual completed workdays after confirmation.
-- Export all completed workdays as CSV.
+- Export all completed workdays as CSV, or export only the displayed statistics period.
 - Import completed workdays from Options using a CSV exported by an earlier installation; existing history is preserved and duplicates are skipped.
 - Switch between English and Spanish (Spain) from Options, with the preference saved locally.
 - Install as a Progressive Web App (PWA) and use the cached application shell offline.
@@ -33,6 +34,7 @@ Workday Tracker is a mobile-first browser application for recording a workday ma
 - Browser `localStorage`
 - `vite-plugin-pwa` / Workbox-generated service worker
 - ESLint
+- Node.js test runner and Playwright (Chromium/WebKit)
 
 ## Prerequisites
 
@@ -93,17 +95,25 @@ The generated production files are written to `dist/`. To serve that build local
 npm run preview
 ```
 
+## Validation
+
+Run `npm run test:release` before publication. It checks unit tests, documentation
+links and release versions, lint, production build, browser workflows and upgrades
+from the previous tagged release. Browser setup, manual/device checks and evidence
+locations are documented in [Testing](docs/TESTING.md).
+
 ## Git workflow
 
 - `main` is the stable branch and is deployed to GitHub Pages.
 - `develop` is the development branch.
-- Develop and verify changes on `develop`, then merge approved stable changes into `main`.
+- Develop features on `feature/*` branches and merge verified work into `develop`.
+- Prepare a minor release on `release/<version>` from `develop`; verify the candidate before merging approved stable changes into `main`. See [the release checklist](docs/RELEASING.md).
 
 ## Deployment
 
 Deployment is implemented by `.github/workflows/deploy.yml` using GitHub Actions and GitHub Pages.
 
-The workflow runs automatically for pushes to `main` and can also be started with `workflow_dispatch`. It:
+The workflow validates pushes to `main`, `develop`, and `release/**`, and can also be started with `workflow_dispatch`. Only `main` deploys to GitHub Pages. It:
 
 1. Checks out the repository on Ubuntu.
 2. Configures Node.js 24 with npm caching.
@@ -111,7 +121,7 @@ The workflow runs automatically for pushes to `main` and can also be started wit
 4. Runs the automated tests, including deployment-identity consistency checks.
 5. Lints the project.
 6. Builds the application with `npm run build`.
-7. Runs production browser checks and the strict upgrade suite from the tagged 1.5.0 build, including exact preservation of existing stored data.
+7. Runs production browser checks and the strict upgrade suite from the tagged previous release (currently `v1.6.0`), including exact preservation of existing stored data.
 8. Retains validation evidence and configures GitHub Pages.
 9. Uploads `dist/` as the Pages artifact.
 10. Requires the separate macOS WebKit/iPhone-emulation upgrade and layout job to pass, then deploys the artifact with `actions/deploy-pages` to the `github-pages` environment.
@@ -129,9 +139,11 @@ npm run generate:production-qr
 ## Project documentation
 
 - [Changelog](CHANGELOG.md)
-- [Version 1.6.0 release notes and verification](docs/RELEASE-1.6.0.md)
+- [Version 1.7.0 release candidate](docs/RELEASE-1.7.0.md)
+- [Release preparation and publication](docs/RELEASING.md)
+- [History statistics and data rules](docs/HISTORY-STATISTICS.md)
+- [Documentation index and archived reviews](docs/README.md)
 - [Safari and iPhone test coverage](docs/IOS-TESTING.md)
-
 - [Architecture](docs/ARCHITECTURE.md)
 - [Testing and regression checklist](docs/TESTING.md)
 - [Technical debt register](docs/TECHNICAL_DEBT.md)

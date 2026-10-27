@@ -2,7 +2,7 @@
 
 ## Automated coverage in this repository
 
-`npm run test:webkit` runs Playwright WebKit with an iPhone device profile, touch input, Europe/Berlin dates, and narrow phone layouts. It builds tagged v1.5.0 and replaces it with the production candidate on the same origin and in the same browser context. It does not reset storage during the upgrade.
+`npm run test:webkit` runs Playwright WebKit with an iPhone device profile, touch input, Europe/Berlin dates, and narrow phone layouts. It builds the previous tagged release (`v1.6.0` by default) and replaces it with the production candidate on the same origin and in the same browser context. It does not reset storage during the upgrade.
 
 Fourteen tests cover:
 
@@ -25,7 +25,17 @@ npm run test:webkit
 
 Linux hosts may need `npx playwright install --with-deps webkit`. Reports, screenshots, storage snapshots, and failure traces are saved under `artifacts/webkit-results/` and `artifacts/webkit-report/`. They contain synthetic fixtures only.
 
-`npm run test:release` includes WebKit alongside the existing tests. The deployment workflow also has a required `webkit` job on macOS. Deployment depends on both the existing build/data checks and that WebKit job. Its first remote execution occurs after the workflow is pushed; local Windows execution does not verify the macOS runner itself.
+`npm run test:release` includes WebKit alongside the existing tests. The deployment workflow also has a required `webkit` job on macOS. Deployment depends on both the existing build/data checks and that WebKit job. Local Windows execution does not verify the macOS runner; require green CI for the final release commit. `UPGRADE_BASELINE` can select an older tag for additional legacy coverage.
+
+The release command also runs bilingual recording, route, recovery, display, duration
+and statistics checks in WebKit. Statistics includes chart/period switching, daily
+details, date filtering, period export, empty states and enlarged text. Those
+responsive checks do not all use the iPhone device profile of the fourteen-test suite.
+
+On this managed Windows workspace, Playwright can finish all fourteen assertions
+and then wait for test-server cleanup. If that occurs, identify and stop only the
+`serve-webkit-upgrade.mjs` process started by that test run; do not stop unrelated
+Node processes. Confirm the runner then reports success before continuing.
 
 ## Actual installed iPhone PWA: remaining coverage
 
@@ -37,7 +47,7 @@ To add real iOS automation later, provide a dedicated test iPhone connected to a
 
 The device workflow should:
 
-1. Install the isolated v1.5.0 test PWA and record active and completed days through its normal controls.
+1. Install the isolated previous-release test PWA and record active and completed days through its normal controls.
 2. Capture all localStorage values from that installed app's own web context.
 3. Change the served build to the release candidate without reinstalling the PWA or clearing its storage.
 4. Close/reopen the same Home Screen app, wait for the new version, and compare every existing stored value exactly.

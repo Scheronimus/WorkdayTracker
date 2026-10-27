@@ -1,3 +1,4 @@
+import { upgradeBaselineRef } from './upgrade-baseline.mjs'
 import { execFileSync } from 'node:child_process'
 import { mkdir, readFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
@@ -8,7 +9,7 @@ const directory = resolve('artifacts/webkit-baseline', new Date().toISOString().
 const source = join(directory, 'source')
 const baseline = join(directory, 'dist')
 await mkdir(source, { recursive: true })
-const sha = execFileSync('git', ['rev-parse', 'v1.5.0^{commit}'], { encoding: 'utf8' }).trim()
+const sha = execFileSync('git', ['rev-parse', `${upgradeBaselineRef}^{commit}`], { encoding: 'utf8' }).trim()
 execFileSync('git', ['archive', '--format=tar', '--output', join(directory, 'baseline.tar'), sha])
 execFileSync('tar', ['-xf', join(directory, 'baseline.tar'), '-C', source])
 execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', source, '--config', join(source, 'vite.config.js'), '--outDir', baseline], { stdio: 'inherit' })

@@ -1,3 +1,4 @@
+import { releaseVersion } from './release-version.mjs'
 /* global document */
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -28,11 +29,11 @@ try {
   ]
   for (const language of ['en', 'es']) for (const width of [320, 390, 1280]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, timezoneId: 'Europe/Berlin', reducedMotion: 'reduce', acceptDownloads: true })
-    await context.addInitScript(({ language, records }) => {
+    await context.addInitScript(({ language, records, releaseVersion }) => {
       localStorage.setItem('workday-tracker-language', JSON.stringify(language))
-      localStorage.setItem('workday-tracker-last-seen-release', '1.6.0')
+      localStorage.setItem('workday-tracker-last-seen-release', releaseVersion)
       localStorage.setItem('workday-tracker-history', JSON.stringify(records))
-    }, { language, records })
+    }, { language, records, releaseVersion })
     const page = await context.newPage()
     await page.clock.install({ time: new Date('2026-10-27T12:00:00+01:00') })
     const errors = []
@@ -96,10 +97,10 @@ try {
   const context = await browser.newContext({ timezoneId: 'Europe/Berlin' })
   const page = await context.newPage()
   await page.clock.install({ time: new Date('2026-10-27T12:00:00+01:00') })
-  await context.addInitScript(() => {
-    localStorage.setItem('workday-tracker-last-seen-release', '1.6.0')
+  await context.addInitScript(releaseVersion => {
+    localStorage.setItem('workday-tracker-last-seen-release', releaseVersion)
     localStorage.setItem('workday-tracker-language', '"en"')
-  })
+  }, releaseVersion)
   await page.goto(url)
   await page.getByRole('button', { name: 'History', exact: true }).click()
   await page.getByRole('button', { name: 'Show statistics', exact: true }).click()

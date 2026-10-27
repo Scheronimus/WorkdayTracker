@@ -1,3 +1,4 @@
+import { upgradeBaselineRef, upgradeBaselineVersion } from './upgrade-baseline.mjs'
 import assert from 'node:assert/strict'
 import { upgradeScenarios } from './upgrade-fixtures.mjs'
 import { execFileSync } from 'node:child_process'
@@ -15,7 +16,7 @@ process.on('uncaughtExceptionMonitor', (error) => {
   console.error(`::error::${error.stack.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`)
 })
 
-const baselineRef = process.env.UPGRADE_BASELINE || 'v1.5.0'
+const baselineRef = upgradeBaselineRef
 const baselineSha = execFileSync('git', ['rev-parse', `${baselineRef}^{commit}`], { encoding: 'utf8' }).trim()
 const { version } = JSON.parse(await readFile('package.json', 'utf8'))
 const output = resolve('artifacts/upgrade-ui', new Date().toISOString().replaceAll(':', '-'))
@@ -26,7 +27,7 @@ execFileSync('git', ['archive', '--format=tar', '--output', join(output, 'baseli
 execFileSync('tar', ['-xf', join(output, 'baseline.tar'), '-C', source])
 const oldPackage = JSON.parse(await readFile(join(source, 'package.json'), 'utf8'))
 const { importWorkdaysFromCsv: importLegacyCsv } = await import(pathToFileURL(join(source, 'src/csvImport.js')))
-assert.equal(oldPackage.version, '1.5.0', 'Test must start from the actual production 1.5.0 source')
+assert.equal(oldPackage.version, upgradeBaselineVersion, 'Test must start from the tagged baseline source')
 execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', source, '--config', join(source, 'vite.config.js'), '--outDir', oldDist], { stdio: 'inherit' })
 assert.ok(existsSync('dist/sw.js'), 'Build the release candidate before running test:upgrade')
 
@@ -85,12 +86,13 @@ try {
     await command('Emulation.setTimezoneOverride', { timezoneId: 'Europe/Berlin' })
     await command('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
     await command('Page.navigate', { url: `http://127.0.0.1:5182${deployment.basePath}` })
-    await waitVersion('1.5.0')
+    await waitVersion(upgradeBaselineVersion)
     await evaluate(`localStorage.setItem('workday-tracker-history', JSON.stringify(${JSON.stringify(scenario.history)}));
       ${scenario.current ? `localStorage.setItem('workday-tracker-current', JSON.stringify(${JSON.stringify(scenario.current)}));` : "localStorage.removeItem('workday-tracker-current');"}
       localStorage.setItem('workday-tracker-language', JSON.stringify(${JSON.stringify(scenario.language)}));
+      localStorage.setItem('workday-tracker-last-seen-release', ${JSON.stringify(upgradeBaselineVersion)});
       localStorage.setItem('unrelated-setting', 'must survive'); location.reload();`)
-    await delay(300); await waitVersion('1.5.0')
+    await delay(300); await waitVersion(upgradeBaselineVersion)
     if (scenario.record) {
       await click('Leave home now')
       await click('Drive home')
@@ -101,13 +103,13 @@ try {
     await evaluate('navigator.serviceWorker.ready.then(() => true)')
     await command('Page.reload')
     await delay(300)
-    await waitVersion('1.5.0')
-    await waitFor(() => evaluate('Boolean(navigator.serviceWorker.controller)'), '1.5.0 service worker control')
+    await waitVersion(upgradeBaselineVersion)
+    await waitFor(() => evaluate('Boolean(navigator.serviceWorker.controller)'), `${upgradeBaselineVersion} service worker control`)
     await click(scenario.language === 'es' ? 'Historial' : 'History')
     await evaluate(`(() => { const create = URL.createObjectURL; URL.createObjectURL = function(blob) { window.exportedCsv = blob.text(); return create.call(URL, blob); }; })()`)
     await click(scenario.language === 'es' ? 'Exportar CSV' : 'Export CSV')
     const legacyCsv = await evaluate('window.exportedCsv')
-    assert.deepEqual(importWorkdaysFromCsv(legacyCsv), importLegacyCsv(legacyCsv), `${scenario.name}: actual 1.5.0 export imports identically`)
+    assert.deepEqual(importWorkdaysFromCsv(legacyCsv), importLegacyCsv(legacyCsv), `${scenario.name}: actual ${upgradeBaselineVersion} export imports identically`)
     const before = await snapshot()
     await writeFile(join(output, `${scenario.name}-before.json`), JSON.stringify(before, null, 2))
     assert.equal(JSON.parse(before['workday-tracker-history']).length, scenario.record ? 1 : scenario.history.length)
@@ -126,6 +128,7 @@ try {
     await command('Page.reload')
     await waitVersion(version)
     await delay(200)
+    assert.ok(await evaluate("Boolean(document.querySelector('.release-notes'))"), 'Candidate release notice appears after a dismissed previous release')
     const after = await snapshot()
     assert.deepEqual(after, before, `${scenario.name}: ALL localStorage values must be byte-for-byte identical after upgrade`)
     const unchanged = () => snapshot().then((value) => {

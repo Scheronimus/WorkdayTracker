@@ -1,4 +1,4 @@
-# Manual Regression Checklist
+# Testing and regression checklist
 
 ## Mobile design and usability
 
@@ -28,9 +28,9 @@ These checks do not emulate an actual software keyboard or an installed phone ap
 
 ## Production upgrade gate
 
-Run `npm run test:release` before publication. It includes `npm run test:upgrade`, which builds tagged v1.5.0 and updates it to the candidate on the same browser origin through the real service worker. Every pre-existing localStorage value must remain byte-for-byte identical through update, reload, navigation, offline loading and cancellation. Confirmed corrections and actual old/new CSV exports are also checked. Evidence is saved under `artifacts/upgrade-ui/`.
+Run `npm run test:release` before publication. It includes `npm run test:upgrade`, which builds the previous tagged release (`v1.6.0` by default) and updates it to the candidate on the same browser origin through the real service worker. Every pre-existing localStorage value must remain byte-for-byte identical through update, reload, navigation, offline loading and cancellation. Confirmed corrections and actual old/new CSV exports are also checked. Evidence is saved under `artifacts/upgrade-ui/`.
 
-The upgrade fixture matrix covers active visits, travel home, completed/current duplicates, imported string IDs, legacy missing fields, Spanish/English, overnight dates, milliseconds, special characters, and 1,000 workdays. CI blocks deployment if the upgrade or browser suite fails. `npm run test:webkit` additionally runs fourteen WebKit/iPhone-emulation tests; a required macOS job runs them before deployment. Actual installed-iPhone testing still requires a device setup; see [iOS testing](IOS-TESTING.md).
+The upgrade fixture matrix covers active visits, travel home, completed/current duplicates, imported string IDs, legacy missing fields, Spanish/English, overnight dates, milliseconds, special characters, and 1,000 workdays. CI blocks deployment if the upgrade or browser suite fails. `npm run test:webkit` additionally runs fourteen WebKit/iPhone-emulation tests; a required macOS job runs them before deployment. `UPGRADE_BASELINE` can select another tagged release for both upgrade suites; see [release preparation](RELEASING.md). Actual installed-iPhone testing still requires a device setup; see [iOS testing](IOS-TESTING.md).
 
 ## Start the app
 
@@ -129,6 +129,17 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Confirm a completed workday with no customers is displayed correctly.
 - [ ] Confirm History date headers remain horizontally aligned when entries are open or closed.
 
+## History statistics
+
+- [ ] Open the chart button in History; switch between Time and Distance without losing the period.
+- [ ] Check week/month/three-month ranges, previous/next and Current period, including month/year boundaries and a daylight-saving change.
+- [ ] Combine two workdays on one departure date; assign overnight days to departure date.
+- [ ] Check work/travel stacked bars and daily kilometres against History records. A maximum of 7 h 14 min must use an 8 h axis; 26 min must use 1 h.
+- [ ] Select a date using touch, the day selector and arrow/Home/End keys. Check empty dates, incomplete kilometres, invalid timestamps and unusually long workdays.
+- [ ] Open View workdays, verify the date filter and first expanded record, clear with Show all workdays, and return to statistics.
+- [ ] Export period CSV and verify only displayed-period workdays are included. List export must still include all History.
+- [ ] Compare the daily table with chart totals, test 200% text and three-month scrolling, and repeat in Spanish.
+
 ## Delete workday
 
 - [ ] Select “Delete day” and cancel the confirmation; confirm nothing is deleted.
@@ -185,9 +196,9 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Confirm the cached application shell loads.
 - [ ] Record or edit data offline, reload, and confirm localStorage persistence still works.
 
-## History draft editor (v1.6)
+## History draft editor
 
-- [ ] Open History ? Edit workday on desktop and phone; verify dates/times, customer names, kilometres and note are editable.
+- [ ] Open History > Edit workday on desktop and phone; verify dates/times, customer names, kilometres and note are editable.
 - [ ] Edit names, note and kilometres only; Save changes must save directly without timestamp confirmation.
 - [ ] Change each timestamp type, including clearing an optional customer time; Save changes must show previous and new values, without modifying stored history.
 - [ ] Return from review and edit again; only Confirm and save may persist timestamp changes and the other draft fields together.
@@ -204,7 +215,7 @@ Run these checks in a modern browser. Use a production build served with `npm ru
 - [ ] Dismiss it and reload: it stays hidden without changing current workday or history data.
 - [ ] Read the notes again from Options → What’s new. Switch to Spanish and verify the notes and controls are translated.
 - [ ] Verify the card fits a narrow phone screen, can be dismissed by keyboard, and is available offline with the cached app.
-- [ ] For each release, update `package.json`/lockfile, the current notes in `src/i18n.js`, and `CHANGELOG.md`. Keep unreleased changes marked Unreleased until release.
+- [ ] For each release, update `package.json`/lockfile, the current notes in `src/i18n.js`, and `CHANGELOG.md`. Prepare the versioned changelog entry as a release candidate; mark publication only after approval. See [the release checklist](RELEASING.md).
 
 ## Quick timestamp correction checks
 

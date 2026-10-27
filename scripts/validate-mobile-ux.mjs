@@ -69,7 +69,7 @@ try {
       assert.equal(await page.locator('html').getAttribute('lang'), language)
       assert.equal(await page.locator('.release-preview').getAttribute('open'), null)
       await page.locator('.release-preview summary').click()
-      assert.ok(await page.getByText(t('releaseEdit'), { exact: true }).isVisible())
+      assert.ok(await page.getByText(t('releaseStatistics'), { exact: true }).isVisible())
       await button('dismissReleaseNotes').click()
       assert.deepEqual(await saved(), [baseline])
       await capture('ready')

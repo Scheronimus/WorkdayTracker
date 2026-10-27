@@ -1,3 +1,4 @@
+import { releaseVersion } from './release-version.mjs'
 /* global document */
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
@@ -23,17 +24,17 @@ try {
   browser = engine === 'webkit' ? await webkit.launch() : await chromium.launch(executablePath ? { executablePath } : {})
   for (const language of ['en', 'es']) for (const width of [320, 390, 430]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, isMobile: true, timezoneId: 'Europe/Berlin', reducedMotion: 'reduce' })
-    await context.addInitScript(language => {
+    await context.addInitScript(({ language, releaseVersion }) => {
       const time = minutes => new Date(Date.now() - minutes * 60000).toISOString()
       const day = { id: 23, leftHomeAt: time(120), arrivedHomeAt: null, homeJourneyStarted: false, kilometresHome: null, note: '',
         visits: [{ id: 1, name: 'Oficina Norte', kilometres: 0.1, arrivedAt: time(100), leftAt: time(80) },
           { id: 2, name: 'Centro de mantenimiento del cliente', kilometres: 0.2, arrivedAt: time(60), leftAt: null }] }
       localStorage.setItem('workday-tracker-language', JSON.stringify(language))
-      localStorage.setItem('workday-tracker-last-seen-release', '1.6.0')
+      localStorage.setItem('workday-tracker-last-seen-release', releaseVersion)
       localStorage.setItem('workday-tracker-current', JSON.stringify(day))
       localStorage.setItem('workday-tracker-history', JSON.stringify([{ ...day, id: 22, arrivedHomeAt: time(10), kilometresHome: 0,
         visits: day.visits.map(visit => ({ ...visit, leftAt: visit.leftAt || time(20) })) }]))
-    }, language)
+    }, { language, releaseVersion })
     const page = await context.newPage()
     const errors = []
     page.on('pageerror', error => errors.push(error.message))

@@ -1,3 +1,5 @@
+> Historical review from October 2026. Findings and test counts describe that revision, not the current release. See the [current documentation](../../README.md). Screenshot links refer to generated local artifacts.
+
 # Workday Tracker UI/UX assessment
 
 Reviewed 26 October 2026 · local version 1.6.0

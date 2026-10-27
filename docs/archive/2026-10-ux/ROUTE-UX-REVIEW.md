@@ -1,3 +1,5 @@
+> Historical review from October 2026. Findings and test counts describe that revision, not the current release. See the [current documentation](../../README.md). Screenshot links refer to generated local artifacts.
+
 # Compact Today route — independent UX assessment
 
 27 October 2026 · `feature/mobile-ux-polish`
@@ -14,8 +16,8 @@ Validation: 42 existing unit tests; lint and production build; production Histor
 
 Screenshots with synthetic records:
 
-- [Spanish route, 390px](../artifacts/mobile-ux/route-chromium/es-390-route.png)
-- [Spanish stop editor, 390px](../artifacts/mobile-ux/route-chromium/es-390-edit.png)
-- [English route, 390px](../artifacts/mobile-ux/route-chromium/en-390-route.png)
+- [Spanish route, 390px](../../../artifacts/mobile-ux/route-chromium/es-390-route.png)
+- [Spanish stop editor, 390px](../../../artifacts/mobile-ux/route-chromium/es-390-edit.png)
+- [English route, 390px](../../../artifacts/mobile-ux/route-chromium/en-390-route.png)
 
 This is an independent agent review of rendered UI and source, not a physical-device usability study. Actual iPhone/Android keyboard and screen-reader interaction remain device-QA items. No deployment or remote CI execution was performed.

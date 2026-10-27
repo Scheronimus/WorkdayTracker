@@ -1,3 +1,4 @@
+import { upgradeBaselineVersion } from '../scripts/upgrade-baseline.mjs'
 import { test, expect } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { upgradeScenarios } from '../scripts/upgrade-fixtures.mjs'
@@ -13,19 +14,20 @@ async function expectVersion(page, value) {
 }
 
 for (const scenario of upgradeScenarios()) {
-  test(`1.5.0 upgrade preserves ${scenario.name}`, async ({ page, request }, testInfo) => {
+  test(`${upgradeBaselineVersion} upgrade preserves ${scenario.name}`, async ({ page, request }, testInfo) => {
     const baseline = await request.post('/__upgrade/baseline')
     await testInfo.attach('baseline-commit', { body: await baseline.text(), contentType: 'text/plain' })
     await page.goto(deployment.basePath)
-    await expectVersion(page, '1.5.0')
+    await expectVersion(page, upgradeBaselineVersion)
     await expect.poll(() => page.evaluate(() => localStorage.getItem('workday-tracker-history'))).not.toBeNull()
-    await page.evaluate(({ current, history, language }) => {
+    await page.evaluate(({ current, history, language, baselineVersion }) => {
       localStorage.setItem('workday-tracker-history', JSON.stringify(history))
       if (current) localStorage.setItem('workday-tracker-current', JSON.stringify(current))
       else localStorage.removeItem('workday-tracker-current')
       localStorage.setItem('workday-tracker-language', JSON.stringify(language))
+      localStorage.setItem('workday-tracker-last-seen-release', baselineVersion)
       localStorage.setItem('unrelated-setting', 'must survive')
-    }, scenario)
+    }, { ...scenario, baselineVersion: upgradeBaselineVersion })
     await page.reload()
     if (scenario.record) {
       for (const label of ['Leave home now', 'Drive home', 'Start driving home', 'Arrived home', 'Confirm arrival home']) {
@@ -35,7 +37,7 @@ for (const scenario of upgradeScenarios()) {
     }
     await page.evaluate(() => navigator.serviceWorker.ready.then(() => true))
     await page.reload()
-    await expectVersion(page, '1.5.0')
+    await expectVersion(page, upgradeBaselineVersion)
     await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true)
     const before = await snapshot(page)
     await testInfo.attach('before-storage', { body: JSON.stringify(before, null, 2), contentType: 'application/json' })
@@ -55,6 +57,7 @@ for (const scenario of upgradeScenarios()) {
     })
     await page.reload()
     await expectVersion(page, version)
+    await expect(page.locator('.release-notes')).toBeVisible()
     expect(await snapshot(page)).toEqual(before)
     await page.getByRole('button', { name: text(scenario.language, 'History', 'Historial'), exact: true }).click()
     await expect(page.locator('.history-card')).toHaveCount(expected.length)

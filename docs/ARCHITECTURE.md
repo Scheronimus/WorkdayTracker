@@ -2,93 +2,144 @@
 
 ## Overview
 
-The application is a client-only React single page rendered into `#root` by `src/main.jsx`. `src/App.jsx` contains the application component, state transitions, persistence, history, formatting, and CSV export. `src/App.css` contains component styling, while `src/index.css` provides global styles. There is no router, backend, account system, or external data service.
+Workday Tracker is a client-only React application rendered by `src/main.jsx`.
+There is no router, backend, account system, telemetry, or external data service.
+`src/App.jsx` owns the main state, persistence, navigation and CSV export.
+`src/App.css` supplies component styles; `src/index.css` defines shared design tokens.
 
-The interface is mobile-first and presents three primary views:
+The primary views are Today (recording), History (completed records and statistics),
+and Options (language, installation, data transfer and current release notes).
 
-- **Today** for preparing a day, recording the route and timestamps, editing the workday note, and completing the final journey.
-- **History** for reviewing completed days, identifying incomplete journey kilometres, editing notes and kilometres, deleting days, and exporting CSV.
-- **Options** for selecting the persistent English or Spanish (Spain) interface language, installing the PWA, and importing history from an older installation.
+## Modules
 
-## Application state
-
-`App` owns the persisted workday and history state plus transient interface state:
-
-- `workday`: the current workday object or `null`.
-- `history`: an array of completed workdays, sorted newest first when loaded.
-- `language`: the selected interface language.
-- `name`: the customer-name form value.
-- `kilometres`: the new-customer kilometre form value.
-- View, clock, and bottom-sheet state used by the mobile interface.
-
-Only one workday is current. Customer visits proceed sequentially: a new customer can be added only when every existing visit has both timestamps. The latest recorded normal timestamp can be undone after confirmation without cascading changes; the warning identifies the unrecoverable timestamp, and the action sequence then returns to that incomplete step. After the last customer, the user records the expected kilometres and starts the home journey without creating an arrival timestamp. At home, the user can review those kilometres before the arrival timestamp completes the workday, adds it to history, and hides its active-day detail. Starting a new day replaces the current workday with an empty one without clearing history.
-
-The final arrival-home timestamp is not part of normal undo. The latest locally created completed workday can be reopened after confirmation only on the same local calendar day and when no different workday is active. Reopening clears only `arrivedHomeAt`, removes that workday from History, and makes it current again. Imported, previous-day, and older completed workdays cannot be reopened.
-
-## Persistence
-
-Three JSON values are stored in browser `localStorage`:
-
-| Key | Content |
+| Module | Responsibility |
 | --- | --- |
-| `workday-tracker-current` | Current workday, including a just-completed workday until a new day starts |
-| `workday-tracker-history` | Array of completed workdays |
-| `workday-tracker-language` | Selected interface language (`en` or `es`) |
+| `workday.js` | Journey transitions, latest timestamp undo, reopening eligibility, incomplete distances |
+| `durations.js` | Work/travel split from ordered recorded instants; invalid records return null |
+| `distance.js` | Exact decimal addition without changing recorded leg values |
+| `RouteTimeline.jsx` | Shared chronological Today/History route and edit controls |
+| `StopEditor.jsx` | Draft customer-name/incoming-distance or home-distance editing |
+| `HistoryEditor.jsx`, `historyEdit.js` | Full/focused timestamp drafts, validation, review and audit metadata |
+| `HistoryStatistics.jsx`, `historyStatistics.js` | Chart controls, daily grouping, period calculations, details and table |
+| `csvImport.js` | Legacy/current localized CSV parsing and validation |
+| `Sheet.jsx`, `useModalDialog.js` | Native modal lifecycle, keyboard containment and focus restoration |
+| `ReleaseNotes.jsx`, `releaseNotes.js`, `i18n.js` | Current bilingual version notice and dismissal |
 
-React effects write each value after state changes. Invalid workday or history JSON falls back to `null` or an empty array, and an unsupported language falls back to English. Data is local to the browser profile and origin.
+## Workday lifecycle
 
-## Data models
+Only one workday is current. Customer visits proceed sequentially. A new customer
+requires all previous visits to have arrival and departure timestamps. Latest
+normal timestamps can be undone after confirmation without cascading deletion.
 
-Workday:
+Driving home records the distance and `homeJourneyStarted`, without recording
+arrival. Confirming arrival sets `arrivedHomeAt`, prepends the completed record to
+History and removes any existing entry with the same ID. Starting a new day
+replaces the current record without clearing History.
+
+Only the latest locally created completed workday can be reopened, on its local
+calendar day, if no different workday is active. After confirmation, reopening
+clears only arrival home, removes the completed History entry, and makes it current.
+Imported, older and previous-day workdays cannot be reopened.
+
+## Persistence and data model
+
+| localStorage key | Content |
+| --- | --- |
+| `workday-tracker-current` | JSON current workday or null, including a just-completed day until a new day starts |
+| `workday-tracker-history` | JSON completed workdays, sorted by arrival home when loaded |
+| `workday-tracker-language` | JSON string `en` or `es` |
+| `workday-tracker-last-seen-release` | Plain version string of the dismissed release notice |
+
+Effects persist workday/history/language changes. Malformed JSON falls back to a
+safe default, but structurally invalid JSON objects are not comprehensively
+validated (see [technical debt](TECHNICAL_DEBT.md)). Storage belongs to the browser
+profile and origin; statistics preferences and filters are transient.
 
 ```js
 {
-  id: Number,                 // Date.now() at creation
-  leftHomeAt: String | null, // ISO timestamp
+  id: Number | String, // local IDs are numeric; imported IDs may be strings
+  leftHomeAt: String | null, // full ISO instant
   arrivedHomeAt: String | null,
   kilometresHome: Number | null,
-  homeJourneyStarted: Boolean, // missing values from older versions are treated as false
-  note: String,
-  visits: CustomerVisit[]
+  homeJourneyStarted: Boolean, // older records can omit this
+  note: String, // older records can omit this
+  visits: [{
+    id: Number | String,
+    name: String,
+    kilometres: Number | null,
+    arrivedAt: String | null,
+    leftAt: String | null
+  }],
+  timestampCorrections: { // optional; only after a confirmed manual correction
+    'arrivedHomeAt': { original: String | null }
+  }
 }
 ```
 
-Customer visit:
+Other correction paths include `leftHomeAt`, `visits.0.arrivedAt` and
+`visits.0.leftAt`. The first original value is retained exactly through subsequent
+corrections, including milliseconds. Clearing/restoring a time retains the audit
+marker. Cancelled or invalid drafts create no metadata.
 
-```js
-{
-  id: Number,                // Date.now() when added
-  name: String,
-  kilometres: Number | null,
-  arrivedAt: String | null,  // ISO timestamp
-  leftAt: String | null      // ISO timestamp
-}
-```
+## History and editing
 
-Kilometre values may remain `null` and can be edited later. The optional workday note is automatically persisted while typing during an active day; completed notes use the History draft editor. Customer names and all recorded dates/times can be corrected in the History draft editor. Recorded normal timestamps can only be cleared in reverse sequence, one at a time. Completed days expose a separate constrained reopen operation for their final arrival-home timestamp.
+Collapsed History cards show date, time range, customer count, recorded kilometres,
+and work/travel durations. Missing distance fields are marked; zero is valid.
+Work time sums customer visits; travel time is the remaining elapsed time between
+leaving and arriving home. Invalid or unordered timestamps show incomplete durations.
 
-## History management
+Expanded History uses the shared editable route, note, original-time details and
+full editor. Stop editors save name/distance drafts explicitly. Timestamp edits
+require before/after review and confirmation; name, note and distance changes do
+not. Saves synchronize the matching completed Today copy and re-sort History.
+Deletion affects only the selected History record after confirmation.
 
-Completing a workday prepends it to history and removes an existing history object with the same workday ID. History cards show the date, times, visit count, and the sum of recorded kilometre values. Expanding a card shows read-only details and an Edit workday button. `HistoryEditor.jsx` keeps a separate draft, validates it through `historyEdit.js`, and saves the entire workday only after timestamp changes have been explicitly confirmed in a before/after review. Names, notes, and distances require no additional confirmation. Cancel discards the draft after a discard prompt. Updates synchronize the matching completed current workday and re-sort history. Deletion uses a browser confirmation dialog and filters only the selected ID from history; the persistence effect saves the result.
+## Statistics
 
-## CSV export
+Statistics first mounts when opened from the History header. It groups completed
+records by local departure date, combining several workdays on one date and
+assigning overnight workdays to departure day. Time reuses `workdayDurations`;
+distance uses exact decimal addition. Invalid times are excluded and counted;
+missing/invalid distances are identified while recorded values remain included.
+Unusually long records stay visible with a review warning.
 
-History also offers a direct Edit button beside every timestamp. The shared editor accepts a target path to show only that timestamp's time and date. `commitTimestampEdit` isolates the selected change, validates journey order, and preserves all unrelated data exactly. A before/after review requires explicit confirmation, and successful saves show a temporary status message. The full workday editor remains available for correcting several values together.
+Weeks start Monday; one or three calendar months start on the first. Daily bars
+use a zero baseline and a maximum rounded up to a whole hour/kilometre (minimum
+one). Three-month charts scroll; day selection, keyboard controls and a daily table
+provide alternative access. View workdays filters History to the selected date.
+See [statistics behavior](HISTORY-STATISTICS.md) for interaction details.
 
-On the first confirmed manual correction, the workday gains `timestampCorrections`, keyed by timestamp path (for example `arrivedHomeAt` or `visits.0.leftAt`). Each entry stores `{ original: ISOString | null }`. Further edits preserve that first value exactly. The entry also marks the timestamp as manually changed, including when it is cleared or restored to its original time. Cancelled and invalid drafts create no entries. History displays a star with an accessible explanation and the original value; existing records without metadata remain compatible. Earlier overwritten timestamps cannot be reconstructed.
+## CSV transfer
 
-CSV export includes an eleventh column with the correction metadata as JSON. Import validates its timestamp paths and original values, and continues accepting legacy nine- and ten-column exports.
+Exports run in the browser through a temporary Blob URL. List export includes all
+History; statistics export includes only completed records in the displayed period.
+There is one row per customer, or one empty-customer row for a day without visits.
+Day-level fields repeat. Commas, quotes and newlines are escaped. Headers and
+filenames follow the selected language; full ISO instants preserve dates and
+milliseconds. The eleventh column stores correction metadata as JSON.
 
-CSV export runs entirely in the browser. It produces one row per customer visit and one row with empty customer fields for a workday without visits. Workday-level fields, including the day note, repeat on every row. Values containing commas, quotes, or line breaks are quoted, and embedded quotes are doubled. Headers and filenames follow the selected language. Timestamp columns now contain full ISO instants so corrected multi-day workdays and milliseconds survive export/import; the importer also accepts legacy time-only values. Older app versions cannot import the new timestamp representation. A `Blob` and temporary object URL trigger the download.
+Import accepts current eleven-column and legacy nine-/ten-column exports,
+validates fields and audit paths, requests confirmation, preserves existing records
+and skips duplicate IDs. Versions before 1.6.0 cannot import the newer full-instant
+exports. Version 1.7.0 changes neither storage schema nor CSV format from 1.6.0.
+CSV is a history copy, not a backup of active workdays or preferences.
 
-## PWA support
+## PWA, deployment and validation
 
-`deployment.config.mjs` is the source of truth for the repository name, production origin, base path, production URL, and deployment-relative asset URLs. Vite, the PWA manifest, and production QR generation consume that module directly. Automated tests verify that runtime consumers do not duplicate the deployment identity and that deployment guidance remains consistent with it.
+`deployment.config.mjs` defines repository identity, origin, URLs and asset paths.
+Vite/PWA and QR generation consume it. The manifest uses `/WorkdayTracker/` as start
+URL and scope. Workbox precaches the production shell with automatic service-worker
+updates. Offline use requires the app to have been loaded and cached beforehand.
 
-`vite-plugin-pwa` is configured in `vite.config.js` with automatic service-worker updates. The generated manifest identifies the app as “Workday Tracker,” uses standalone display mode, and sets both scope and start URL to `/WorkdayTracker/`. The production build generates the service worker and precaches the built application assets, supporting installation and offline loading of the cached application shell.
+CI validates `main`, `develop` and `release/**`; only `main` deploys. Chromium and
+macOS WebKit jobs gate publication. Upgrade tests default to tagged `v1.6.0`,
+replace it with the candidate on the same origin, and compare storage exactly.
+`UPGRADE_BASELINE` permits an additional legacy baseline. See [testing](TESTING.md),
+[iPhone limitations](IOS-TESTING.md), and [release preparation](RELEASING.md).
 
-## Production diagnostics
+## Diagnostics decision
 
-Workday Tracker intentionally has no analytics, telemetry, or remote error reporting. It is a small, client-only application whose locally stored customer names, notes, routes, and timestamps may be sensitive. Adding diagnostics would introduce data-governance, consent, and operational responsibilities that are not justified by the application’s current scale.
-
-This decision should be reconsidered if the application gains a backend or accounts, its user base grows substantially, production failures become difficult to diagnose, or a clear need emerges for consent-based, privacy-preserving error reporting. Any future diagnostics must exclude customer names, notes, routes, timestamps, and stored workday data by default.
+No analytics, telemetry or remote error reporting is collected. Customer names,
+notes, routes and timestamps remain local. Reconsider diagnostics only if backend,
+account or operational requirements justify consent-based reporting that excludes
+stored workday data by default.

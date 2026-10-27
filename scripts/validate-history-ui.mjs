@@ -1,3 +1,5 @@
+import { releaseVersion } from './release-version.mjs'
+import { translate } from '../src/i18n.js'
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -75,15 +77,15 @@ try {
   await evaluate("document.querySelector('[aria-label=\"Dismiss release notes\"]').click()")
   await delay()
   assert.equal(await evaluate("Boolean(document.querySelector('.release-notes'))"), false)
-  assert.equal(await evaluate("localStorage.getItem('workday-tracker-last-seen-release')"), '1.6.0')
+  assert.equal(await evaluate("localStorage.getItem('workday-tracker-last-seen-release')"), releaseVersion)
   assert.deepEqual(JSON.parse(await evaluate("localStorage.getItem('workday-tracker-history')")), [day])
   await click('Options')
   await evaluate("document.querySelector('.release-archive').open = true")
-  assert.ok(await evaluate("document.querySelector('.release-archive').textContent.includes('Edit completed workdays')"))
+  assert.ok(await evaluate(`document.querySelector('.release-archive').textContent.includes(${JSON.stringify(translate('en', 'releaseStatistics'))})`))
   await evaluate(`(() => { const radio = document.querySelector('input[value="es"]'); radio.click(); })()`)
   await delay()
   assert.ok(await evaluate("document.querySelector('.release-archive').textContent.includes('Novedades')"))
-  assert.ok(await evaluate("document.querySelector('.release-archive').textContent.includes('Usa el lápiz')"))
+  assert.ok(await evaluate(`document.querySelector('.release-archive').textContent.includes(${JSON.stringify(translate('es', 'releaseStatistics'))})`))
   await screenshot('release-notes-es.png')
   await evaluate("document.querySelector('input[value=en]').click()")
   await delay()
@@ -171,7 +173,7 @@ try {
     assert.equal(await evaluate("document.querySelectorAll('.history-timestamp-row .manual-timestamp').length"), 1)
     await click('Options')
     await evaluate("document.querySelector('.release-archive').open = true")
-    assert.ok(await evaluate("document.querySelector('.release-archive').textContent.includes('Edit completed workdays')"))
+    assert.ok(await evaluate(`document.querySelector('.release-archive').textContent.includes(${JSON.stringify(translate('en', 'releaseStatistics'))})`))
     await screenshot('offline-release-notes.png')
     console.log('PASS: production service-worker offline reload preserves corrected history, originals, and release notes.')
   }

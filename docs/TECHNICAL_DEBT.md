@@ -15,7 +15,7 @@ Priority meanings:
 - **Priority:** High
 - **Area:** Data resilience
 - **Risk:** Workdays are stored only in `localStorage`. Removing an installed web app, clearing website data, changing origin, or losing the device can make data unavailable.
-- **Current mitigation:** Users can export completed history as CSV and import that CSV into another installation.
+- **Current mitigation:** Users can export completed history as CSV and import that CSV into another installation. Use History list export for a complete copy; a statistics-period export includes only that period.
 - **Remaining gap:** CSV does not preserve an unfinished current workday, application preferences, or explicit data-format metadata.
 - **Suggested completion criteria:** Provide a versioned full backup and restore format covering current workday, history, and preferences; validate it before import and document the recovery workflow.
 
@@ -32,14 +32,14 @@ Priority meanings:
 - **Priority:** Medium
 - **Area:** PWA lifecycle
 - **Risk:** Service-worker activation timing, cached versions, fixed Home Screen icons, and multiple installations can make users unsure which version and data container they are using.
-- **Current mitigation:** The application displays its version and uses automatic service-worker updates.
-- **Suggested completion criteria:** Detect a waiting update, show an “Update available” action, document iOS multiple-install behaviour, and test upgrades from the previous production release.
+- **Current mitigation:** The application displays its version, shows a once-per-version notice, uses automatic service-worker updates, and tests same-origin upgrades from the previous release. Installed-iPhone lifecycle coverage remains manual.
+- **Suggested completion criteria:** Detect a waiting update, show an “Update available” action, document iOS multiple-install behaviour, and verify upgrades in the actual installed iPhone app.
 
 ### TD-004 — CSV is a positional, localized interchange format
 
 - **Priority:** Medium
 - **Area:** Import/export
-- **Risk:** Import relies on the existing nine- or ten-column order. Spreadsheet edits, future columns, or additional translations could make otherwise recognizable exports invalid.
+- **Risk:** Import relies on positional nine-/ten-column legacy exports and the current eleven-column format, including original timestamp metadata. Spreadsheet edits, future columns, or additional translations could make otherwise recognizable exports invalid.
 - **Current mitigation:** The importer validates the file, supports the legacy and current English/Spanish exports, handles quoted fields, skips duplicate IDs, and never replaces existing history silently.
 - **Suggested completion criteria:** Add a format/version marker or stable machine-readable headers, retain backward compatibility tests, and expose row-specific validation errors.
 
@@ -48,16 +48,8 @@ Priority meanings:
 - **Priority:** Medium
 - **Area:** Maintainability
 - **Risk:** `src/App.jsx` owns persistence, domain transitions, PWA installation, CSV workflows, translations, and most interface rendering. Changes in one concern can cause regressions elsewhere.
-- **Current mitigation:** CSV parsing is isolated in its own tested module.
+- **Current mitigation:** CSV parsing, workday transitions, durations, decimal distance addition, statistics, draft validation, route rendering, modal handling and release notices are separated into focused modules. Persistence and top-level workflows remain in App.
 - **Suggested completion criteria:** Extract persistence and workday-domain hooks, then split Today, History, Options, and modal sheets into focused components without changing behaviour.
-
-### TD-006 — Automated coverage is narrow
-
-- **Priority:** Medium
-- **Area:** Quality assurance
-- **Risk:** Most workday transitions, persistence, translations, accessibility, service-worker upgrades, and mobile layouts depend on manual regression testing.
-- **Current mitigation:** Tests, ESLint, and production builds run in CI; CSV parsing and deployment identity have automated coverage; `docs/TESTING.md` contains a manual checklist.
-- **Suggested completion criteria:** Add component tests for critical workday flows and import confirmation, plus a small browser-level suite covering persistence, language switching, and an upgrade from stored legacy data.
 
 ## Maintenance rules
 
@@ -82,3 +74,10 @@ Priority meanings:
 - **Decision:** Accepted—no diagnostics at present.
 - **Resolution:** Workday Tracker remains telemetry-free while it is a small, client-only application. This avoids collecting or risking exposure of potentially sensitive customer, note, route, timestamp, and workday data and avoids introducing consent infrastructure without a demonstrated need.
 - **Reconsider when:** The application gains a backend or accounts, its user base grows substantially, production failures become difficult to diagnose, or consent-based privacy-preserving reporting becomes operationally justified.
+
+### TD-006 - Critical flows depended on manual regression testing
+
+- **Completed:** 2026-10-27
+- **Implementation:** History editing, mobile UX and statistics changes through commit `081c8dd`; see [testing](TESTING.md).
+- **Resolution:** Automated domain/CSV/correction tests plus production History, recording, recovery, modal, layout, duration and statistics suites run in Chromium and WebKit. Tagged production upgrades verify byte-for-byte storage preservation, offline behavior and 1,000-day history. Release and CI gates include these suites.
+- **Remaining scope:** Physical keyboards, screen readers and installed-iPhone lifecycle testing are tracked in the manual/device checklist; passing browser emulation does not replace that work.

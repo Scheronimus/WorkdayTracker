@@ -2,8 +2,14 @@
 
 ## Unreleased
 
+No changes yet.
+
+## 1.7.0 — 2026-10-27 (release candidate; not published)
+
 ### Added
 
+- Add History statistics with stacked daily work/travel time and kilometre charts; select a week, month, or three months, navigate periods, inspect daily details, and open matching workdays.
+- Export only the displayed statistics period, with accessible daily tables, keyboard/day selection, and English/Spanish controls.
 - Show work time (customer visits) and travel time (all other elapsed time) in collapsed History cards, in English and Spanish. Totals recalculate after timestamp corrections; invalid records show Incomplete/Incompleto. Storage and CSV formats are unchanged.
 
 ### Changed
@@ -21,6 +27,8 @@
 
 ### Fixed
 
+- Round chart maxima up to the next integer and preserve exact daily decimal distance totals so floating-point tails do not inflate the axis.
+- Defer chart rendering until Statistics is opened, preserving History feedback and avoiding unused chart work.
 - Display decimal journey totals without binary floating-point tails, preserving recorded leg values and entered precision.
 - Refresh History editor validation after a field changes so corrected values do not retain obsolete errors.
 - Keep route numbers inside their markers and connect the final stop correctly with enlarged text and wrapped leg labels.
@@ -32,7 +40,9 @@
 ### Validation
 
 - Add English/Spanish mobile usability checks at 320, 390, and 430 pixels, with Chromium and WebKit support, screenshots, full workday recording, modal keyboard interaction, large text, overnight corrections, draft discard, CSV, and persistence.
-- Include the mobile usability suites in the release command and deployment checks. No storage or CSV format changes.
+- Include mobile, route, recovery, display, duration, and statistics suites in release and deployment checks for Chromium and WebKit.
+- Validate production service-worker upgrades from `v1.6.0`; retain the configurable `v1.5.0` legacy baseline. No storage or CSV format changes relative to 1.6.0.
+- Update release/deployment guidance, architecture, test coverage, and the debt register; archive dated UI and regression reports.
 
 ## 1.6.0 — 2026-10-26
 

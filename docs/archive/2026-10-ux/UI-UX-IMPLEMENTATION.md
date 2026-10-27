@@ -1,3 +1,5 @@
+> Historical review from October 2026. Findings and test counts describe that revision, not the current release. See the [current documentation](../../README.md). Screenshot links refer to generated local artifacts.
+
 # Mobile UI/UX improvements
 
 Implemented on `feature/mobile-ux-polish`, following [the assessment](UI-UX-REVIEW.md). All copy and interactions support English and Spanish. The workday state machine, storage keys/schema, CSV format, timestamp audit data, and confirmation requirements are unchanged.
@@ -32,7 +34,7 @@ Browser tests use isolated profiles with synthetic records. Screenshots are gene
 
 The older Chromium checks now use the installed Playwright dependency to manage browser sessions and CDP transport, retaining their assertions while avoiding local raw-WebSocket command timeouts. No dependency was added.
 
-Physical iPhone/Android software keyboards, installed-PWA lifecycle/safe areas, screen-reader interaction, and outdoor readability still require device QA. A reduced viewport exercises layout sizing, not a real operating-system keyboard. See [the manual checklist](TESTING.md) and [iOS testing limits](IOS-TESTING.md).
+Physical iPhone/Android software keyboards, installed-PWA lifecycle/safe areas, screen-reader interaction, and outdoor readability still require device QA. A reduced viewport exercises layout sizing, not a real operating-system keyboard. See [the manual checklist](../../TESTING.md) and [iOS testing limits](../../IOS-TESTING.md).
 
 ## Local validation results
 
