@@ -4,7 +4,7 @@
 
 No changes yet.
 
-## 1.7.0 — 2026-10-27 (release candidate; not published)
+## 1.7.0 — 2026-10-27
 
 ### Added
 

@@ -1,7 +1,7 @@
 # Workday Tracker 1.7.0
 
-Status: release candidate prepared on 27 October 2026 on `release/1.7.0`.
-Not published, tagged or deployed.
+Release date: 27 October 2026. Approved for production publication.
+Release tag: `v1.7.0`; production branch: `main`.
 
 ## User changes
 
@@ -76,5 +76,8 @@ must pass for the final publication commit. See [iPhone testing](IOS-TESTING.md)
 
 ## Publication
 
-Publication is pending approval. Follow [the release checklist](RELEASING.md) to
-merge to `main`, create `v1.7.0`, push and verify deployment after approval.
+Production publication was approved on 27 October 2026. The approved release is
+merged into `main` and tagged `v1.7.0` through [the release checklist](RELEASING.md).
+The [GitHub Actions workflow](https://github.com/Scheronimus/WorkdayTracker/actions/workflows/deploy.yml)
+gates deployment on Ubuntu/Chromium and macOS/WebKit checks. The production app is
+available at [Workday Tracker](https://scheronimus.github.io/WorkdayTracker/).

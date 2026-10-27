@@ -1,6 +1,6 @@
 # Workday Tracker 1.6.0
 
-> Historical release record. For the current candidate and publication procedure,
+> Historical release record. For the current release and publication procedure,
 > see [1.7.0](RELEASE-1.7.0.md) and [Releasing](RELEASING.md).
 
 Release date: 26 October 2026.

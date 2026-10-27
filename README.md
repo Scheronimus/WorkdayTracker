@@ -139,7 +139,7 @@ npm run generate:production-qr
 ## Project documentation
 
 - [Changelog](CHANGELOG.md)
-- [Version 1.7.0 release candidate](docs/RELEASE-1.7.0.md)
+- [Version 1.7.0 release notes](docs/RELEASE-1.7.0.md)
 - [Release preparation and publication](docs/RELEASING.md)
 - [History statistics and data rules](docs/HISTORY-STATISTICS.md)
 - [Documentation index and archived reviews](docs/README.md)

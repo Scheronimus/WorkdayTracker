@@ -3,7 +3,7 @@
 ## Prepare a candidate
 
 1. Start `release/<version>` from verified `develop`. New compatible product
-   features use a minor bump; the current candidate is 1.7.0.
+   features use a minor bump from the current published version (1.7.0).
 2. Update the root versions in `package.json` and `package-lock.json`, including
    the lockfile root package entry. Do not change dependency versions incidentally.
 3. Move completed Unreleased entries into a versioned changelog section labelled
@@ -69,5 +69,5 @@ Preparation does not publish. After approval:
 5. Merge the release changes back into `develop` so version and documentation
    remain aligned. Keep the previous tag available for subsequent upgrade tests.
 
-The 1.7.0 preparation does not authorize pushing, tagging, merging into `main` or
-deploying; those publication actions require release approval.
+Publication actions require release approval. Version 1.7.0 was approved for
+production publication on 27 October 2026.

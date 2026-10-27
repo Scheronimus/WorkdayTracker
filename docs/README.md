@@ -5,7 +5,7 @@
 | Document | Purpose |
 | --- | --- |
 | [Project README](../README.md) | Features, setup, local/mobile use and deployment |
-| [1.7.0 release candidate](RELEASE-1.7.0.md) | Candidate scope, compatibility, validation and publication status |
+| [1.7.0 release notes](RELEASE-1.7.0.md) | Release scope, compatibility, validation and publication |
 | [Release checklist](RELEASING.md) | Versioning, branches, upgrade baselines, validation and approved publication |
 | [Architecture](ARCHITECTURE.md) | Modules, lifecycle, storage, editing, statistics and CSV |
 | [History statistics](HISTORY-STATISTICS.md) | Period and aggregation rules, chart interactions and exports |
