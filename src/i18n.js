@@ -12,6 +12,10 @@ export const locales = {
 
 const messages = {
   en: {
+    editStop: 'Edit stop',
+    editCustomer: 'Edit {name}',
+    editLeg: 'Edit kilometres from {from} to {to}',
+    addKilometres: 'Add kilometres',
     viewReleaseNotes: 'See what’s new',
     atCustomer: 'Current stop · At customer',
     upcomingStop: 'Upcoming stop',
@@ -173,6 +177,10 @@ const messages = {
     exportFilename: 'workday-history',
   },
   es: {
+    editStop: 'Editar parada',
+    editCustomer: 'Editar {name}',
+    editLeg: 'Editar kilómetros de {from} a {to}',
+    addKilometres: 'Añadir kilómetros',
     viewReleaseNotes: 'Ver las novedades',
     atCustomer: 'Parada actual · En el cliente',
     upcomingStop: 'Próxima parada',

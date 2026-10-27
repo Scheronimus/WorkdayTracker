@@ -17,6 +17,8 @@ import HistoryEditor from './HistoryEditor'
 import ReleaseNotes from './ReleaseNotes.jsx'
 import Sheet from './Sheet'
 import Icon from './Icon'
+import RouteTimeline from './RouteTimeline'
+import StopEditor from './StopEditor'
 import { markReleaseNotesSeen, shouldShowReleaseNotes } from './releaseNotes.js'
 import './App.css'
 
@@ -173,6 +175,7 @@ function App() {
   const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false)
   const [isFinishSheetOpen, setIsFinishSheetOpen] = useState(false)
   const [isNoteSheetOpen, setIsNoteSheetOpen] = useState(false)
+  const [editingRoute, setEditingRoute] = useState(null)
   const [installPrompt, setInstallPrompt] = useState(null)
   const [isAppInstalled, setIsAppInstalled] = useState(isStandaloneApp)
   const [workday, setWorkday] = useState(() => readStorage(STORAGE_KEY, null))
@@ -593,6 +596,18 @@ function App() {
     setIsCustomerSheetOpen(true)
   }
 
+  function openStopEditor(id, focusDistance, event) {
+    event.currentTarget.focus({ preventScroll: true })
+    setEditingRoute({ id, focusDistance })
+  }
+
+  function saveRouteStop(values) {
+    setWorkday(current => editingRoute.id == null ? { ...current, kilometresHome: values.kilometres } : {
+      ...current, visits: current.visits.map(visit => visit.id === editingRoute.id ? { ...visit, ...values } : visit),
+    })
+    setEditingRoute(null)
+  }
+
   async function installApp() {
     if (!installPrompt) return
     await installPrompt.prompt()
@@ -731,34 +746,9 @@ function App() {
                 </section>
               )}
               <h2 className="route-heading">{t('workdayRoute')}</h2>
-              <section className="timeline" aria-label={t('workdayRoute')}>
-                <div className="timeline-row home-row route-stop complete">
-                  <span className="dot" />
-                  <div>
-                    <strong>{t('home')}</strong>
-                    <time dateTime={workday.leftHomeAt}>{t('left')} {formatClock(workday.leftHomeAt, locale)}{timestampStar(workday, 'leftHomeAt')}</time>
-                    {undoableTimestamp?.field === 'leftHomeAt' && (
-                      <button className="undo-timestamp-button" type="button" aria-label={t('undoTimestamp')} title={t('undoTimestamp')} onClick={undoTimestamp}>
-                        <Icon name="undo" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-          {workday.visits.map((visit, index) => visit.id !== currentActionVisit?.id && renderVisit(visit, index))}
-
-          <div className={`timeline-row route-stop next-home${isTravellingHome ? ' current' : ''}`}>
-            <span className="dot" />
-            <div>
-              <strong>{t('home')}</strong>
-              <span>{t(isTravellingHome ? 'travellingHome' : 'endOfRoute')}</span>
-              {isTravellingHome && workday.kilometresHome !== null && (
-                <span>{formatKilometres(workday.kilometresHome)} km</span>
-              )}
-            </div>
-          </div>
-
-              </section>
+              <RouteTimeline day={workday} currentVisit={currentActionVisit} undoable={undoableTimestamp}
+                t={t} formatTime={value => formatHistoryTime(value, workday, locale)} formatDistance={formatKilometres}
+                star={path => timestampStar(workday, path)} onUndo={undoTimestamp} onEdit={openStopEditor} />
 
               <div ref={dockRef} className="action-dock" aria-label={t('currentAction')}>
                 {currentActionVisit && !currentActionVisit.arrivedAt && (
@@ -802,6 +792,14 @@ function App() {
               )}
               <button className="primary" onClick={startNewDay}>{t('startNewDay')}</button>
             </div>
+          )}
+
+          {editingRoute && workday?.leftHomeAt && !workday.arrivedHomeAt && (
+            <StopEditor visit={workday.visits.find(visit => visit.id === editingRoute.id) ?? null}
+              kilometresHome={workday.kilometresHome} focusDistance={editingRoute.focusDistance} t={t}
+              from={editingRoute.id == null ? workday.visits.at(-1)?.name ?? t('homeLower')
+                : workday.visits[workday.visits.findIndex(visit => visit.id === editingRoute.id) - 1]?.name ?? t('homeLower')}
+              onClose={() => setEditingRoute(null)} onSave={saveRouteStop} />
           )}
 
           {isCustomerSheetOpen && canAddCustomer && (

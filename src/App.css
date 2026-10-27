@@ -42,6 +42,31 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .prepared-day p:not(.eyebrow) { margin: 8px 0 0; color: var(--muted); font-size: .9375rem; }
 .prepared-day .start-button { grid-column: 1 / -1; }
 .timeline { display: grid; gap: 12px; }
+.trip-list { list-style: none; margin: 0; padding: 0 0 0 12px; }
+.trip-list > li { position: relative; margin: 0; padding: 0 0 12px 28px; border-left: 2px solid #d0d2e5; }
+.trip-list > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.trip-list > li:last-child:not(.trip-origin)::before { position: absolute; content: ''; left: -2px; top: 0; width: 2px; height: 56px; background: #d0d2e5; }
+.trip-origin { padding-top: 2px; }
+.trip-stop { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: start; column-gap: 8px; }
+.trip-marker { position: absolute; top: 6px; left: -39px; display: grid; place-items: center; width: 20px; height: 20px; border: 3px solid var(--canvas); border-radius: 50%; background: #deddf3; color: var(--accent-strong); font-size: .625rem; font-weight: 700; }
+.trip-origin > .trip-marker { left: -11px; width: 18px; height: 18px; top: 4px; box-shadow: inset 0 0 0 4px var(--accent); }
+.trip-marker.done { color: var(--muted); background: var(--canvas); }
+.trip-marker .ui-icon { width: 16px; height: 16px; }
+.trip-stop.is-current .trip-marker { background: var(--accent); color: white; }
+.trip-stop-content { display: grid; min-width: 0; gap: 3px; }
+.trip-stop-content > strong { overflow-wrap: anywhere; font-size: 1rem; }
+.trip-times { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: .875rem; min-height: 22px; }
+.trip-times > span { overflow-wrap: anywhere; }
+.trip-times time { font-variant-numeric: tabular-nums; }
+.trip-times .undo-timestamp-button { flex: 0 0 44px; margin-block: -11px; }
+.trip-state { color: var(--accent-strong); font-size: .875rem; }
+.trip-edit { display: grid; place-items: center; width: 44px; min-height: 44px; margin-top: -8px; padding: 12px; color: var(--muted); background: transparent; }
+.trip-edit .ui-icon, .trip-leg .ui-icon { width: 16px; height: 16px; }
+.trip-edit:hover, .trip-edit:focus-visible { color: var(--accent); }
+.trip-leg { display: flex; align-items: center; gap: 8px; width: fit-content; max-width: 100%; min-height: 44px; padding: 8px 0; color: var(--muted); background: transparent; font-size: .875rem; font-weight: 500; text-align: left; }
+.trip-leg.missing { color: var(--accent); }
+.trip-leg:hover, .trip-leg:focus-visible { color: var(--accent); }
+.stop-editor-actions { display: flex; gap: 12px; margin-top: 8px; }
 .current-stop { margin-bottom: 24px; }
 .current-stop .route-stop { margin-left: 0; }
 .current-stop .route-stop::before { display: none; }

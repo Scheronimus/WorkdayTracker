@@ -13,9 +13,10 @@
     "test": "node --test \"src/*.test.js\" \"scripts/*.test.mjs\"",
     "test:ui": "node scripts/validate-history-ui.mjs",
     "test:ux": "node scripts/validate-mobile-ux.mjs",
+    "test:route": "node scripts/validate-route-ui.mjs",
     "test:upgrade": "node scripts/validate-upgrade.mjs",
     "test:webkit": "playwright test",
-    "test:release": "npm test && npm run lint && npm run build && npm run test:ui -- --production && npm run test:ux -- --production && npm run test:upgrade && npm run test:webkit && npm run test:ux -- --production --webkit",
+    "test:release": "npm test && npm run lint && npm run build && npm run test:ui -- --production && npm run test:ux -- --production && npm run test:route && npm run test:upgrade && npm run test:webkit && npm run test:ux -- --production --webkit && npm run test:route -- --webkit",
     "preview": "vite preview"
   },
   "dependencies": {
