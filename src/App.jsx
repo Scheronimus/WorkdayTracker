@@ -14,6 +14,8 @@ import {
   undoLatestTimestamp,
 } from './workday'
 import HistoryEditor from './HistoryEditor'
+import HistoryStatistics from './HistoryStatistics.jsx'
+import { dateKey } from './historyStatistics'
 import ReleaseNotes from './ReleaseNotes.jsx'
 import Sheet from './Sheet'
 import Icon from './Icon'
@@ -163,6 +165,9 @@ function App() {
   const navigationRef = useRef(null)
   const dockRef = useRef(null)
   const [activeView, setActiveView] = useState('today')
+  const [statisticsOpen, setStatisticsOpen] = useState(false)
+  const [historyDate, setHistoryDate] = useState(null)
+  const historyScroll = useRef(0)
   const [language, setLanguage] = useState(readLanguage)
   const [now, setNow] = useState(() => Date.now())
   const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false)
@@ -499,7 +504,7 @@ function App() {
     }
   }
 
-  function exportCsv() {
+  function exportCsv(selectedHistory = history) {
     const headers = [
       t('csvWorkdayId'),
       t('csvWorkdayDate'),
@@ -514,7 +519,7 @@ function App() {
       t('csvTimestampCorrections'),
     ]
 
-    const rows = history.flatMap((day) => {
+    const rows = selectedHistory.flatMap((day) => {
       const visits = day.visits.length ? day.visits : [null]
       return visits.map((visit) => [
         day.id,
@@ -942,7 +947,12 @@ function App() {
 
       {activeView === 'history' && (
         <section className="history view" aria-labelledby="history-title">
-          <div className="section-heading">
+          <div className="section-heading history-heading">
+            <button className="history-mode-button secondary" type="button" aria-label={t(statisticsOpen ? 'statsShowList' : 'statsShow')} title={t(statisticsOpen ? 'statsShowList' : 'statsShow')} aria-pressed={statisticsOpen} onClick={() => {
+              if (!statisticsOpen) historyScroll.current = window.scrollY
+              setStatisticsOpen(!statisticsOpen)
+              requestAnimationFrame(() => window.scrollTo(0, statisticsOpen ? historyScroll.current : 0))
+            }}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">{statisticsOpen ? <path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1" /> : <path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7M2 20h20" />}</svg></button>
             <p className="eyebrow">{t('completedDays')}</p>
             <h2 id="history-title">{t('history')}</h2>
             <p className="status">
@@ -952,12 +962,22 @@ function App() {
             </p>
           </div>
 
+          <div hidden={!statisticsOpen}><HistoryStatistics history={history} locale={locale} t={t} onExport={exportCsv} onViewDays={key => {
+            setHistoryDate(key)
+            setStatisticsOpen(false)
+            requestAnimationFrame(() => {
+              const card = document.querySelector('.history-list details')
+              if (card) { card.open = true; card.querySelector('summary').focus(); card.scrollIntoView({ block: 'start' }) }
+            })
+          }} /></div>
+          {historyDate && !statisticsOpen && <button className="secondary stats-filter" onClick={() => setHistoryDate(null)}>{historyDate} · {t('statsShowAll')}</button>}
+          <div hidden={statisticsOpen}>
           {history.length > 0 && (
             <>
-              <button className="secondary export-button" type="button" onClick={exportCsv}>{t('exportCsv')}</button>
+              <button className="secondary export-button" type="button" onClick={() => exportCsv()}>{t('exportCsv')}</button>
 
               <div className="history-list">
-            {history.map((day) => {
+            {history.filter(day => !historyDate || dateKey(day.leftHomeAt) === historyDate).map((day) => {
               const total = totalKilometres(day)
               const kilometresIncomplete = hasMissingKilometres(day)
               const durations = workdayDurations(day)
@@ -1012,6 +1032,7 @@ function App() {
               </div>
             </>
           )}
+          </div>
         </section>
       )}
 
