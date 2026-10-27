@@ -210,7 +210,7 @@ function App() {
   function timestampRow(day, path, value, title, editTitle = title) {
     const correction = day.timestampCorrections?.[path]
     return <div className="history-timestamp-row" data-timestamp-path={path}>
-      <div><span>{title}</span><strong>{value ? formatHistoryTime(value, day, locale) : t('notRecorded')}{timestampStar(day, path)}</strong>
+      <div><span>{title} <time dateTime={value || undefined}>{value ? formatHistoryTime(value, day, locale) : t('notRecorded')}{timestampStar(day, path)}</time></span>
         {correction && <small className="original-timestamp">{t('originalTime')}: {correction.original ? formatHistoryTime(correction.original, day, locale) : t('notRecorded')}</small>}
       </div>
       <button className="timestamp-edit-button" type="button"
