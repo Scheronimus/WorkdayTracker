@@ -2,6 +2,8 @@
 
 ## Mobile design and usability
 
+`npm run test:recovery` (after building; append `-- --webkit` for WebKit) checks English/Spanish recovery through the actual UI: cancel/confirm leaving-home and departure Undo, Undo after adding a later customer, reopen and re-complete a day, preserve notes and home-journey state across reload, export then restore CSV into a fresh isolated context, cancel import, skip duplicates, preserve history when preparing another day, and cancel/confirm deletion. It also verifies imported days cannot be reopened as local workdays. Evidence is under `artifacts/mobile-ux/recovery-chromium/` and `recovery-webkit/`. Both variants are included in release and CI checks.
+
 `npm run test:route` (after building) verifies the compact route and customer/distance editor in English/Spanish at 320/390/430px. Append `-- --webkit` for WebKit. It covers Save/Cancel/Escape, validation and corrected errors, first-invalid-field focus, zero versus missing distances, renamed journey labels, timestamp preservation, and final Home visibility only after departure home. Screenshots are under `artifacts/mobile-ux/route-chromium/` and `route-webkit/`. Both variants are part of release and CI checks.
 
 The route suite also opens the completed workday in History, checks the same chronological timeline and all timestamp pencils, cancels and saves customer edits, verifies the matching completed Today record stays synchronized, and checks cancellation of timestamp correction. History screenshots use the `-history.png` suffix. Imported completed days show the recorded final Home even when older records do not have a home-journey flag.

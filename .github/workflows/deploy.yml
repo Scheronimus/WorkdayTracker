@@ -61,6 +61,9 @@ jobs:
       - name: Compact route and stop editing checks
         run: npm run test:route
 
+      - name: Recovery and CSV restore checks
+        run: npm run test:recovery
+
       - name: Production data upgrade checks
         run: npm run test:upgrade
 
@@ -111,6 +114,8 @@ jobs:
         run: npm run test:ux -- --production --webkit
       - name: WebKit compact route and stop editing checks
         run: npm run test:route -- --webkit
+      - name: WebKit recovery and CSV restore checks
+        run: npm run test:recovery -- --webkit
       - name: Upload WebKit evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -119,7 +124,7 @@ jobs:
           path: |
             artifacts/webkit-results/
             artifacts/webkit-report/
-            artifacts/mobile-ux/webkit/
+            artifacts/mobile-ux/
           if-no-files-found: ignore
 
   deploy:
