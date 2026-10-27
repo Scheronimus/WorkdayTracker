@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Replace the outlined Undo/Deshacer button with a subtle curved-arrow icon beside the timestamp, retaining its 44px target, accessible label, and confirmation.
 - Refine Today, History, Options, and editing with shared typography, spacing, surfaces, icons, and larger phone targets in English and Spanish.
 - Emphasize the current stop and show timestamps before secondary distance fields; clarify elapsed workday time and incomplete distance subtotals.
 - Simplify History labels while keeping seconds, correction markers, originals, and overnight dates visible.

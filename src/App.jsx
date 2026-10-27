@@ -626,8 +626,8 @@ function App() {
                   <span>{t('arrived')}</span>
                   <strong>{visit.arrivedAt ? formatHistoryTime(visit.arrivedAt, workday, locale) : t('notYet')}{timestampStar(workday, `visits.${index}.arrivedAt`)}</strong>
                   {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'arrivedAt' && (
-                    <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
-                      {t('undoTimestamp')}
+                    <button className="undo-timestamp-button" type="button" aria-label={t('undoTimestamp')} title={t('undoTimestamp')} onClick={undoTimestamp}>
+                      <Icon name="undo" />
                     </button>
                   )}
                 </p>
@@ -635,8 +635,8 @@ function App() {
                   <span>{t('left')}</span>
                   <strong>{visit.leftAt ? formatHistoryTime(visit.leftAt, workday, locale) : t('notYet')}{timestampStar(workday, `visits.${index}.leftAt`)}</strong>
                   {undoableTimestamp?.visitId === visit.id && undoableTimestamp.field === 'leftAt' && (
-                    <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
-                      {t('undoTimestamp')}
+                    <button className="undo-timestamp-button" type="button" aria-label={t('undoTimestamp')} title={t('undoTimestamp')} onClick={undoTimestamp}>
+                      <Icon name="undo" />
                     </button>
                   )}
                 </p>
@@ -738,8 +738,8 @@ function App() {
                     <strong>{t('home')}</strong>
                     <time dateTime={workday.leftHomeAt}>{t('left')} {formatClock(workday.leftHomeAt, locale)}{timestampStar(workday, 'leftHomeAt')}</time>
                     {undoableTimestamp?.field === 'leftHomeAt' && (
-                      <button className="undo-timestamp-button" type="button" onClick={undoTimestamp}>
-                        {t('undoTimestamp')}
+                      <button className="undo-timestamp-button" type="button" aria-label={t('undoTimestamp')} title={t('undoTimestamp')} onClick={undoTimestamp}>
+                        <Icon name="undo" />
                       </button>
                     )}
                   </div>
