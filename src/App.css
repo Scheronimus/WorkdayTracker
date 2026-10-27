@@ -153,14 +153,17 @@ input, textarea { scroll-margin-block: 24px; }
 .export-button { margin-bottom: 16px; }
 .history-list { display: grid; gap: 12px; }
 .history-card { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); }
-.history-card summary { position: relative; display: flex; justify-content: space-between; gap: 12px; padding: 16px 16px 16px 36px; cursor: pointer; list-style: none; }
+.history-card summary { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) fit-content(38%); gap: 12px; padding: 16px 16px 16px 36px; cursor: pointer; list-style: none; }
 .history-card summary::-webkit-details-marker { display: none; }
 .history-card summary::before { position: absolute; top: 24px; left: 16px; width: 6px; height: 6px; content: ''; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); }
 .history-card[open] summary::before { transform: rotate(45deg); }
 .history-card summary > div { display: grid; gap: 4px; min-width: 0; }
 .history-card summary strong { font-size: 1rem; }
 .history-card summary span { color: var(--muted); font-size: .875rem; }
-.history-card .history-total { align-self: start; max-width: 38%; color: var(--accent-strong); font-weight: 650; text-align: right; overflow-wrap: anywhere; }
+.history-card .history-total { align-self: start; color: var(--accent-strong); font-weight: 650; text-align: right; overflow-wrap: anywhere; }
+.history-card summary > .history-durations { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 4px; }
+.history-durations > span { display: grid; align-content: start; gap: 3px; }
+.history-durations strong { color: var(--ink); font-variant-numeric: tabular-nums; }
 .history-card.incomplete { border-color: #d7b65c; }
 .history-card .history-kilometres-warning { display: inline-flex; align-items: flex-start; gap: 6px; color: #805300; font-weight: 600; }
 .history-kilometres-warning::before { display: inline-grid; width: 18px; height: 18px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: white; background: #916500; content: '!'; font-size: .75rem; }

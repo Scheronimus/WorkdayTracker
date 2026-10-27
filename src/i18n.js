@@ -12,6 +12,11 @@ export const locales = {
 
 const messages = {
   en: {
+    workTime: 'Work time',
+    travelTime: 'Travel time',
+    durationIncomplete: 'Incomplete',
+    durationMinutes: '{minutes} min',
+    durationHoursMinutes: '{hours} h {minutes} min',
     editStop: 'Edit stop',
     editCustomer: 'Edit {name}',
     editLeg: 'Edit kilometres from {from} to {to}',
@@ -177,6 +182,11 @@ const messages = {
     exportFilename: 'workday-history',
   },
   es: {
+    workTime: 'Trabajo',
+    travelTime: 'Viaje',
+    durationIncomplete: 'Incompleto',
+    durationMinutes: '{minutes} min',
+    durationHoursMinutes: '{hours} h {minutes} min',
     editStop: 'Editar parada',
     editCustomer: 'Editar {name}',
     editLeg: 'Editar kilómetros de {from} a {to}',

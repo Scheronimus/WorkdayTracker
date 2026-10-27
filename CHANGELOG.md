@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Show work time (customer visits) and travel time (all other elapsed time) in collapsed History cards, in English and Spanish. Totals recalculate after timestamp corrections; invalid records show Incomplete/Incompleto. Storage and CSV formats are unchanged.
+
 ### Changed
 
 - Match History to Today’s route typography: inline arrival/departure labels and times, compact timestamp rows, and the same neutral route background. Keep timestamp correction controls and original-value details.

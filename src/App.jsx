@@ -20,6 +20,7 @@ import Icon from './Icon'
 import RouteTimeline from './RouteTimeline'
 import StopEditor from './StopEditor'
 import { totalKilometres } from './distance'
+import { workdayDurations } from './durations'
 import { markReleaseNotesSeen, shouldShowReleaseNotes } from './releaseNotes.js'
 import './App.css'
 
@@ -187,6 +188,13 @@ function App() {
   const t = (key, replacements) => translate(language, key, replacements)
   const formatKilometres = value => value == null || value === '' ? '—'
     : new Intl.NumberFormat(locale, { maximumFractionDigits: 20 }).format(value)
+  const durationLabel = value => {
+    if (value == null) return t('durationIncomplete')
+    const minutes = Math.floor(value / 60000)
+    const hours = Math.floor(minutes / 60)
+    return hours ? t('durationHoursMinutes', { hours, minutes: String(minutes % 60).padStart(2, '0') })
+      : t('durationMinutes', { minutes })
+  }
 
   function dismissReleaseNotes() {
     markReleaseNotesSeen(packageJson.version)
@@ -952,6 +960,7 @@ function App() {
             {history.map((day) => {
               const total = totalKilometres(day)
               const kilometresIncomplete = hasMissingKilometres(day)
+              const durations = workdayDurations(day)
 
               return (
                 <details className={`history-card${kilometresIncomplete ? ' incomplete' : ''}`} key={day.id}>
@@ -966,6 +975,10 @@ function App() {
                       )}
                     </div>
                     <span className="history-total">{total === null ? t('noKmRecorded') : kilometresIncomplete ? t('kilometresRecorded', { count: formatKilometres(total) }) : `${formatKilometres(total)} km`}</span>
+                    <div className="history-durations">
+                      <span className="history-duration-work"><span>{t('workTime')}</span><strong>{durationLabel(durations?.workMs)}</strong></span>
+                      <span className="history-duration-travel"><span>{t('travelTime')}</span><strong>{durationLabel(durations?.travelMs)}</strong></span>
+                    </div>
                   </summary>
 
                   <div className="history-details">

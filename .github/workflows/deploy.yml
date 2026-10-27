@@ -67,6 +67,9 @@ jobs:
       - name: Display precision and validation usability checks
         run: npm run test:design
 
+      - name: History work and travel duration checks
+        run: npm run test:durations
+
       - name: Production data upgrade checks
         run: npm run test:upgrade
 
@@ -121,6 +124,8 @@ jobs:
         run: npm run test:recovery -- --webkit
       - name: WebKit display precision and validation usability checks
         run: npm run test:design -- --webkit
+      - name: WebKit History work and travel duration checks
+        run: npm run test:durations -- --webkit
       - name: Upload WebKit evidence
         if: always()
         uses: actions/upload-artifact@v4
